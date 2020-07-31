@@ -41,7 +41,7 @@ namespace CryptoNote
         const size_t BLOCKCHAIN_TIMESTAMP_CHECK_WINDOW_V3 = 11;
 
         // MONEY_SUPPLY - total number coins to be generated
-        const uint64_t MONEY_SUPPLY = UINT64_C(10,000,000.00000000);
+        const uint64_t MONEY_SUPPLY = UINT64_C(1000000000000000);
 
         const uint32_t ZAWY_DIFFICULTY_BLOCK_INDEX = 0;
 
@@ -374,7 +374,7 @@ namespace CryptoNote
     const std::string LICENSE_URL = "https://github.com/spawncoin/spawncoin/blob/master/LICENSE";
 
     const static boost::uuids::uuid CRYPTONOTE_NETWORK = {
-        {0xbb, 0xcc, 0xaa, 0x54 0xff, 0xcd, 0x39, 0x22, 0xbc, 0xdc, 0xdd, 0xb4, 0x32, 0xcc, 0x88, 0x99}};
+        {0xbb, 0xcc, 0xaa, 0x54, 0xff, 0xcd, 0x39, 0x22, 0xbc, 0xdc, 0xdd, 0xb4, 0x32, 0xcc, 0x88, 0x99}};
 
     const char *const SEED_NODES[] = {
         "45.77.131.170:11897", // rock
