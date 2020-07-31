@@ -369,7 +369,7 @@ namespace CryptoNote
     const uint64_t LEVELDB_MAX_OPEN_FILES = 128; // 128 files
     const uint64_t LEVELDB_MAX_FILE_SIZE_MB = 1024; // 1024MB = 1GB
 
-    const char LATEST_VERSION_URL[] = "https://github.com/spawncoin/spawncoin/latest";
+    const char LATEST_VERSION_URL[] = "https://github.com/spawncoin/spawncoin/releases/latest";
 
     const std::string LICENSE_URL = "https://github.com/spawncoin/spawncoin/blob/master/LICENSE";
 

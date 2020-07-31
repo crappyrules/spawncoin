@@ -14,7 +14,7 @@ We are a community of people across the world giving our time to make this softw
 
 To use Spawncoin, you'll need a way to connect to the network, and a wallet to hold your funds. This software includes those things for you, you can compile it yourself, or you can download the ones that we have compiled for you.
 
-**Click here to download: https://github.com/spawncoin/spawncoin**
+**Click here to download: https://github.com/spawncoin/spawncoin/releases**
 
 To compile from sourcecode yourself, [click here for build instructions](https://github.com/spawncoin/spawncoin/blob/development/COMPILE.md).
 
