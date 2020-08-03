@@ -17,7 +17,7 @@ int main() {
 #include <iostream>
 #include <vector>
 
-#include "db/db_impl/db_impl.h"
+#include "db/db_impl.h"
 #include "monitoring/histogram.h"
 #include "rocksdb/comparator.h"
 #include "rocksdb/db.h"
@@ -26,12 +26,12 @@ int main() {
 #include "rocksdb/perf_context.h"
 #include "rocksdb/slice_transform.h"
 #include "rocksdb/table.h"
-#include "test_util/testharness.h"
 #include "util/coding.h"
 #include "util/gflags_compat.h"
 #include "util/random.h"
 #include "util/stop_watch.h"
 #include "util/string_util.h"
+#include "util/testharness.h"
 #include "utilities/merge_operators.h"
 
 using GFLAGS_NAMESPACE::ParseCommandLineFlags;
@@ -53,10 +53,9 @@ DEFINE_int32(value_size, 40, "");
 DEFINE_bool(enable_print, false, "Print options generated to console.");
 
 // Path to the database on file system
-const std::string kDbName =
-    ROCKSDB_NAMESPACE::test::PerThreadDBPath("prefix_test");
+const std::string kDbName = rocksdb::test::PerThreadDBPath("prefix_test");
 
-namespace ROCKSDB_NAMESPACE {
+namespace rocksdb {
 
 struct TestKey {
   uint64_t prefix;
@@ -84,7 +83,7 @@ class TestKeyComparator : public Comparator {
 
   // Compare needs to be aware of the possibility of a and/or b is
   // prefix only
-  int Compare(const Slice& a, const Slice& b) const override {
+  virtual int Compare(const Slice& a, const Slice& b) const override {
     const TestKey kkey_a = SliceToTestKey(a);
     const TestKey kkey_b = SliceToTestKey(b);
     const TestKey *key_a = &kkey_a;
@@ -123,12 +122,14 @@ class TestKeyComparator : public Comparator {
     return Compare(TestKeyToSlice(sa, a), TestKeyToSlice(sb, b)) < 0;
   }
 
-  const char* Name() const override { return "TestKeyComparator"; }
+  virtual const char* Name() const override {
+    return "TestKeyComparator";
+  }
 
-  void FindShortestSeparator(std::string* /*start*/,
-                             const Slice& /*limit*/) const override {}
+  virtual void FindShortestSeparator(std::string* /*start*/,
+                                     const Slice& /*limit*/) const override {}
 
-  void FindShortSuccessor(std::string* /*key*/) const override {}
+  virtual void FindShortSuccessor(std::string* /*key*/) const override {}
 };
 
 namespace {
@@ -194,23 +195,27 @@ class SamePrefixTransform : public SliceTransform {
   explicit SamePrefixTransform(const Slice& prefix)
       : prefix_(prefix), name_("rocksdb.SamePrefix." + prefix.ToString()) {}
 
-  const char* Name() const override { return name_.c_str(); }
+  virtual const char* Name() const override { return name_.c_str(); }
 
-  Slice Transform(const Slice& src) const override {
+  virtual Slice Transform(const Slice& src) const override {
     assert(InDomain(src));
     return prefix_;
   }
 
-  bool InDomain(const Slice& src) const override {
+  virtual bool InDomain(const Slice& src) const override {
     if (src.size() >= prefix_.size()) {
       return Slice(src.data(), prefix_.size()) == prefix_;
     }
     return false;
   }
 
-  bool InRange(const Slice& dst) const override { return dst == prefix_; }
+  virtual bool InRange(const Slice& dst) const override {
+    return dst == prefix_;
+  }
 
-  bool FullLengthEnabled(size_t* /*len*/) const override { return false; }
+  virtual bool FullLengthEnabled(size_t* /*len*/) const override {
+    return false;
+  }
 };
 
 }  // namespace
@@ -278,8 +283,9 @@ class PrefixTest : public testing::Test {
   PrefixTest() : option_config_(kBegin) {
     options.comparator = new TestKeyComparator();
   }
-  ~PrefixTest() override { delete options.comparator; }
-
+  ~PrefixTest() {
+    delete options.comparator;
+  }
  protected:
   enum OptionConfig {
     kBegin,
@@ -752,7 +758,7 @@ TEST_F(PrefixTest, PrefixSeekModePrev) {
       for (size_t k = 0; k < 9; k++) {
         if (rnd.OneIn(2) || it == whole_map.begin()) {
           iter->Next();
-          ++it;
+          it++;
           if (FLAGS_enable_print) {
             std::cout << "Next >> ";
           }
@@ -872,7 +878,7 @@ TEST_F(PrefixTest, PrefixSeekModePrev3) {
   }
 }
 
-}  // namespace ROCKSDB_NAMESPACE
+}  // end namespace rocksdb
 
 int main(int argc, char** argv) {
   ::testing::InitGoogleTest(&argc, argv);

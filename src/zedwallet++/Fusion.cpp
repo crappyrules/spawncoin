@@ -1,5 +1,5 @@
-// Copyright (c) 2018-2019, The TurtleCoin Developers
-//
+// Copyright (c) 2018, The TurtleCoin Developers
+// 
 // Please see the included LICENSE file for more information.
 
 ///////////////////////////////
@@ -7,9 +7,12 @@
 ///////////////////////////////
 
 #include <iostream>
-#include <utilities/ColouredMsg.h>
-#include <utilities/FormatTools.h>
-#include <walletbackend/WalletBackend.h>
+
+#include <Utilities/FormatTools.h>
+
+#include <WalletBackend/WalletBackend.h>
+
+#include <Utilities/ColouredMsg.h>
 #include <zedwallet++/Utilities.h>
 
 void optimize(const std::shared_ptr<WalletBackend> walletBackend)
@@ -70,7 +73,8 @@ bool optimizeRound(const std::shared_ptr<WalletBackend> walletBackend)
 
             sentTransactions++;
 
-            std::cout << InformationMsg("Sent fusion transaction #") << InformationMsg(sentTransactions)
+            std::cout << InformationMsg("Sent fusion transaction #")
+                      << InformationMsg(sentTransactions)
                       << SuccessMsg("\nHash: ") << SuccessMsg(hash) << "\n\n";
         }
     }
@@ -78,7 +82,7 @@ bool optimizeRound(const std::shared_ptr<WalletBackend> walletBackend)
     uint64_t currentBalance = walletBackend->getTotalUnlockedBalance();
 
     /* Wait for balance to unlock, so sending transactions can proceed */
-    while (currentBalance < initialBalance)
+    while(currentBalance < initialBalance)
     {
         std::cout << InformationMsg("Waiting for balance to return and unlock:\n"
                                     "\nTotal balance: ")
@@ -87,7 +91,8 @@ bool optimizeRound(const std::shared_ptr<WalletBackend> walletBackend)
                   << WarningMsg("\nLocked balance: ")
                   << WarningMsg(Utilities::formatAmount(initialBalance - currentBalance))
 
-                  << SuccessMsg("\nUnlocked balance: ") << SuccessMsg(Utilities::formatAmount(currentBalance))
+                  << SuccessMsg("\nUnlocked balance: ")
+                  << SuccessMsg(Utilities::formatAmount(currentBalance))
 
                   << InformationMsg("\nWill check again in 15 seconds...\n\n");
 

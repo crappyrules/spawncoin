@@ -13,7 +13,7 @@
 #include "util/string_util.h"
 #include <stdio.h>
 
-namespace ROCKSDB_NAMESPACE {
+namespace rocksdb {
 
 namespace {
 
@@ -32,27 +32,27 @@ class FixedPrefixTransform : public SliceTransform {
         // the class implementation itself.
         name_("rocksdb.FixedPrefix." + ToString(prefix_len_)) {}
 
-  const char* Name() const override { return name_.c_str(); }
+  virtual const char* Name() const override { return name_.c_str(); }
 
-  Slice Transform(const Slice& src) const override {
+  virtual Slice Transform(const Slice& src) const override {
     assert(InDomain(src));
     return Slice(src.data(), prefix_len_);
   }
 
-  bool InDomain(const Slice& src) const override {
+  virtual bool InDomain(const Slice& src) const override {
     return (src.size() >= prefix_len_);
   }
 
-  bool InRange(const Slice& dst) const override {
+  virtual bool InRange(const Slice& dst) const override {
     return (dst.size() == prefix_len_);
   }
 
-  bool FullLengthEnabled(size_t* len) const override {
+  virtual bool FullLengthEnabled(size_t* len) const override {
     *len = prefix_len_;
     return true;
   }
 
-  bool SameResultWhenAppended(const Slice& prefix) const override {
+  virtual bool SameResultWhenAppended(const Slice& prefix) const override {
     return InDomain(prefix);
   }
 };
@@ -72,25 +72,25 @@ class CappedPrefixTransform : public SliceTransform {
         // the class implementation itself.
         name_("rocksdb.CappedPrefix." + ToString(cap_len_)) {}
 
-  const char* Name() const override { return name_.c_str(); }
+  virtual const char* Name() const override { return name_.c_str(); }
 
-  Slice Transform(const Slice& src) const override {
+  virtual Slice Transform(const Slice& src) const override {
     assert(InDomain(src));
     return Slice(src.data(), std::min(cap_len_, src.size()));
   }
 
-  bool InDomain(const Slice& /*src*/) const override { return true; }
+  virtual bool InDomain(const Slice& /*src*/) const override { return true; }
 
-  bool InRange(const Slice& dst) const override {
+  virtual bool InRange(const Slice& dst) const override {
     return (dst.size() <= cap_len_);
   }
 
-  bool FullLengthEnabled(size_t* len) const override {
+  virtual bool FullLengthEnabled(size_t* len) const override {
     *len = cap_len_;
     return true;
   }
 
-  bool SameResultWhenAppended(const Slice& prefix) const override {
+  virtual bool SameResultWhenAppended(const Slice& prefix) const override {
     return prefix.size() >= cap_len_;
   }
 };
@@ -99,15 +99,15 @@ class NoopTransform : public SliceTransform {
  public:
   explicit NoopTransform() { }
 
-  const char* Name() const override { return "rocksdb.Noop"; }
+  virtual const char* Name() const override { return "rocksdb.Noop"; }
 
-  Slice Transform(const Slice& src) const override { return src; }
+  virtual Slice Transform(const Slice& src) const override { return src; }
 
-  bool InDomain(const Slice& /*src*/) const override { return true; }
+  virtual bool InDomain(const Slice& /*src*/) const override { return true; }
 
-  bool InRange(const Slice& /*dst*/) const override { return true; }
+  virtual bool InRange(const Slice& /*dst*/) const override { return true; }
 
-  bool SameResultWhenAppended(const Slice& /*prefix*/) const override {
+  virtual bool SameResultWhenAppended(const Slice& /*prefix*/) const override {
     return false;
   }
 };
@@ -209,35 +209,4 @@ const SliceTransform* NewNoopTransform() {
   return new NoopTransform;
 }
 
-PinnableSlice::PinnableSlice(PinnableSlice&& other) {
-  *this = std::move(other);
-}
-
-PinnableSlice& PinnableSlice::operator=(PinnableSlice&& other) {
-  if (this != &other) {
-    Cleanable::Reset();
-    Cleanable::operator=(std::move(other));
-    size_ = other.size_;
-    pinned_ = other.pinned_;
-    if (pinned_) {
-      data_ = other.data_;
-      // When it's pinned, buf should no longer be of use.
-    } else {
-      if (other.buf_ == &other.self_space_) {
-        self_space_ = std::move(other.self_space_);
-        buf_ = &self_space_;
-        data_ = buf_->data();
-      } else {
-        buf_ = other.buf_;
-        data_ = other.data_;
-      }
-    }
-    other.self_space_.clear();
-    other.buf_ = &other.self_space_;
-    other.pinned_ = false;
-    other.PinSelf();
-  }
-  return *this;
-}
-
-}  // namespace ROCKSDB_NAMESPACE
+}  // namespace rocksdb

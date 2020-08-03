@@ -5,9 +5,8 @@
 
 import os
 import unittest
-from advisor.rule_parser import RulesSpec
-from advisor.db_log_parser import DatabaseLogs, DataSource
-from advisor.db_options_parser import DatabaseOptions
+from advisor.rule_parser import RulesSpec, DatabaseLogs, DatabaseOptions
+from advisor.rule_parser import get_triggered_rules, trigger_conditions
 
 RuleToSuggestions = {
     "stall-too-many-memtables": [
@@ -42,20 +41,16 @@ class TestAllRulesTriggered(unittest.TestCase):
     def setUp(self):
         # load the Rules
         this_path = os.path.abspath(os.path.dirname(__file__))
-        ini_path = os.path.join(this_path, 'input_files/triggered_rules.ini')
+        ini_path = os.path.join(this_path, '../advisor/rules.ini')
         self.db_rules = RulesSpec(ini_path)
         self.db_rules.load_rules_from_spec()
         self.db_rules.perform_section_checks()
         # load the data sources: LOG and OPTIONS
         log_path = os.path.join(this_path, 'input_files/LOG-0')
         options_path = os.path.join(this_path, 'input_files/OPTIONS-000005')
-        db_options_parser = DatabaseOptions(options_path)
-        self.column_families = db_options_parser.get_column_families()
-        db_logs_parser = DatabaseLogs(log_path, self.column_families)
-        self.data_sources = {
-            DataSource.Type.DB_OPTIONS: [db_options_parser],
-            DataSource.Type.LOG: [db_logs_parser]
-        }
+        self.data_sources = []
+        self.data_sources.append(DatabaseOptions(options_path))
+        self.data_sources.append(DatabaseLogs(log_path))
 
     def test_triggered_conditions(self):
         conditions_dict = self.db_rules.get_conditions_dict()
@@ -64,24 +59,17 @@ class TestAllRulesTriggered(unittest.TestCase):
         for cond in conditions_dict.values():
             self.assertFalse(cond.is_triggered(), repr(cond))
         for rule in rules_dict.values():
-            self.assertFalse(
-                rule.is_triggered(conditions_dict, self.column_families),
-                repr(rule)
-            )
+            self.assertFalse(rule.is_triggered(conditions_dict), repr(rule))
 
-        # # Trigger the conditions as per the data sources.
-        # trigger_conditions(, conditions_dict)
-
-        # Get the set of rules that have been triggered
-        triggered_rules = self.db_rules.get_triggered_rules(
-            self.data_sources, self.column_families
-        )
+        # Trigger the conditions as per the data sources.
+        trigger_conditions(self.data_sources, conditions_dict)
 
         # Make sure each condition and rule is triggered
         for cond in conditions_dict.values():
-            if cond.get_data_source() is DataSource.Type.TIME_SERIES:
-                continue
             self.assertTrue(cond.is_triggered(), repr(cond))
+
+        # Get the set of rules that have been triggered
+        triggered_rules = get_triggered_rules(rules_dict, conditions_dict)
 
         for rule in rules_dict.values():
             self.assertIn(rule, triggered_rules)
@@ -106,13 +94,9 @@ class TestConditionsConjunctions(unittest.TestCase):
         # load the data sources: LOG and OPTIONS
         log_path = os.path.join(this_path, 'input_files/LOG-1')
         options_path = os.path.join(this_path, 'input_files/OPTIONS-000005')
-        db_options_parser = DatabaseOptions(options_path)
-        self.column_families = db_options_parser.get_column_families()
-        db_logs_parser = DatabaseLogs(log_path, self.column_families)
-        self.data_sources = {
-            DataSource.Type.DB_OPTIONS: [db_options_parser],
-            DataSource.Type.LOG: [db_logs_parser]
-        }
+        self.data_sources = []
+        self.data_sources.append(DatabaseOptions(options_path))
+        self.data_sources.append(DatabaseLogs(log_path))
 
     def test_condition_conjunctions(self):
         conditions_dict = self.db_rules.get_conditions_dict()
@@ -121,13 +105,10 @@ class TestConditionsConjunctions(unittest.TestCase):
         for cond in conditions_dict.values():
             self.assertFalse(cond.is_triggered(), repr(cond))
         for rule in rules_dict.values():
-            self.assertFalse(
-                rule.is_triggered(conditions_dict, self.column_families),
-                repr(rule)
-            )
+            self.assertFalse(rule.is_triggered(conditions_dict), repr(rule))
 
         # Trigger the conditions as per the data sources.
-        self.db_rules.trigger_conditions(self.data_sources)
+        trigger_conditions(self.data_sources, conditions_dict)
 
         # Check for the conditions
         conds_triggered = ['log-1-true', 'log-2-true', 'log-3-true']
@@ -144,16 +125,14 @@ class TestConditionsConjunctions(unittest.TestCase):
             'multiple-conds-one-false',
             'multiple-conds-all-false'
         ]
-        for rule_name in rules_triggered:
-            rule = rules_dict[rule_name]
+        for rule in rules_triggered:
             self.assertTrue(
-                rule.is_triggered(conditions_dict, self.column_families),
+                rules_dict[rule].is_triggered(conditions_dict),
                 repr(rule)
             )
-        for rule_name in rules_not_triggered:
-            rule = rules_dict[rule_name]
+        for rule in rules_not_triggered:
             self.assertFalse(
-                rule.is_triggered(conditions_dict, self.column_families),
+                rules_dict[rule].is_triggered(conditions_dict),
                 repr(rule)
             )
 
@@ -212,7 +191,7 @@ class TestParsingErrors(unittest.TestCase):
         ini_path = os.path.join(self.this_path, 'input_files/rules_err2.ini')
         db_rules = RulesSpec(ini_path)
         regex = '.*provide source for condition.*'
-        with self.assertRaisesRegex(NotImplementedError, regex):
+        with self.assertRaisesRegex(ValueError, regex):
             db_rules.load_rules_from_spec()
 
     def test_suggestion_missing_action(self):
@@ -225,7 +204,7 @@ class TestParsingErrors(unittest.TestCase):
     def test_section_no_name(self):
         ini_path = os.path.join(self.this_path, 'input_files/rules_err4.ini')
         db_rules = RulesSpec(ini_path)
-        regex = 'Parsing error: needed section header:.*'
+        regex = 'Parsing error: section header be like:.*'
         with self.assertRaisesRegex(ValueError, regex):
             db_rules.load_rules_from_spec()
 

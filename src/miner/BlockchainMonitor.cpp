@@ -5,19 +5,21 @@
 
 #include "BlockchainMonitor.h"
 
-#include "common/StringTools.h"
-#include "rpc/CoreRpcServerCommandsDefinitions.h"
-#include "rpc/JsonRpc.h"
+#include "Common/StringTools.h"
 
-#include <system/EventLock.h>
-#include <system/InterruptedException.h>
-#include <system/Timer.h>
-#include <utilities/ColouredMsg.h>
+#include <System/EventLock.h>
+#include <System/Timer.h>
+#include <System/InterruptedException.h>
+
+#include "Rpc/CoreRpcServerCommandsDefinitions.h"
+#include "Rpc/JsonRpc.h"
+
+#include <Utilities/ColouredMsg.h>
 
 using json = nlohmann::json;
 
 BlockchainMonitor::BlockchainMonitor(
-    System::Dispatcher &dispatcher,
+    System::Dispatcher& dispatcher,
     const size_t pollingInterval,
     const std::shared_ptr<httplib::Client> httpClient):
 
@@ -35,15 +37,15 @@ void BlockchainMonitor::waitBlockchainUpdate()
 
     auto lastBlockHash = requestLastBlockHash();
 
-    while (!lastBlockHash && !m_stopped)
-    {
+    while (!lastBlockHash && !m_stopped) {
         std::this_thread::sleep_for(std::chrono::seconds(m_pollingInterval));
         lastBlockHash = requestLastBlockHash();
     }
 
-    while (!m_stopped)
+    while(!m_stopped)
     {
-        m_sleepingContext.spawn([this]() {
+        m_sleepingContext.spawn([this] ()
+        {
             System::Timer timer(m_dispatcher);
             timer.sleep(std::chrono::seconds(m_pollingInterval));
         });
@@ -52,8 +54,7 @@ void BlockchainMonitor::waitBlockchainUpdate()
 
         auto nextBlockHash = requestLastBlockHash();
 
-        while (!nextBlockHash && !m_stopped)
-        {
+        while (!nextBlockHash && !m_stopped) {
             std::this_thread::sleep_for(std::chrono::seconds(m_pollingInterval));
             nextBlockHash = requestLastBlockHash();
         }
@@ -80,7 +81,11 @@ void BlockchainMonitor::stop()
 
 std::optional<Crypto::Hash> BlockchainMonitor::requestLastBlockHash()
 {
-    json j = {{"jsonrpc", "2.0"}, {"method", "getlastblockheader"}, {"params", {}}};
+    json j = {
+        {"jsonrpc", "2.0"},
+        {"method", "getlastblockheader"},
+        {"params", {}}
+    };
 
     auto res = m_httpClient->Post("/json_rpc", j.dump(), "application/json");
 
@@ -96,7 +101,8 @@ std::optional<Crypto::Hash> BlockchainMonitor::requestLastBlockHash()
         std::stringstream stream;
 
         stream << "Failed to get block hash - received unexpected http "
-               << "code from server: " << res->status << std::endl;
+               << "code from server: "
+               << res->status << std::endl;
 
         std::cout << WarningMsg(stream.str()) << std::endl;
 
@@ -113,7 +119,8 @@ std::optional<Crypto::Hash> BlockchainMonitor::requestLastBlockHash()
         {
             std::stringstream stream;
 
-            stream << "Failed to get block hash from daemon. Response: " << status << std::endl;
+            stream << "Failed to get block hash from daemon. Response: "
+                   << status << std::endl;
 
             std::cout << WarningMsg(stream.str());
 

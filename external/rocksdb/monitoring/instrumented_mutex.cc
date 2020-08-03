@@ -6,20 +6,18 @@
 #include "monitoring/instrumented_mutex.h"
 #include "monitoring/perf_context_imp.h"
 #include "monitoring/thread_status_util.h"
-#include "test_util/sync_point.h"
+#include "util/sync_point.h"
 
-namespace ROCKSDB_NAMESPACE {
+namespace rocksdb {
 namespace {
-#ifndef NPERF_CONTEXT
 Statistics* stats_for_report(Env* env, Statistics* stats) {
   if (env != nullptr && stats != nullptr &&
-      stats->get_stats_level() > kExceptTimeForMutex) {
+      stats->stats_level_ > kExceptTimeForMutex) {
     return stats;
   } else {
     return nullptr;
   }
 }
-#endif  // NPERF_CONTEXT
 }  // namespace
 
 void InstrumentedMutex::Lock() {
@@ -68,4 +66,4 @@ bool InstrumentedCondVar::TimedWaitInternal(uint64_t abs_time_us) {
   return cond_.TimedWait(abs_time_us);
 }
 
-}  // namespace ROCKSDB_NAMESPACE
+}  // namespace rocksdb

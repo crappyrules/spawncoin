@@ -10,15 +10,14 @@
 // This file is a portable substitute for sys/time.h which does not exist on
 // Windows
 
-#pragma once
+#ifndef STORAGE_LEVELDB_PORT_SYS_TIME_H_
+#define STORAGE_LEVELDB_PORT_SYS_TIME_H_
 
 #if defined(OS_WIN) && defined(_MSC_VER)
 
 #include <time.h>
 
-#include "rocksdb/rocksdb_namespace.h"
-
-namespace ROCKSDB_NAMESPACE {
+namespace rocksdb {
 
 namespace port {
 
@@ -39,9 +38,11 @@ inline struct tm* localtime_r(const time_t* timep, struct tm* result) {
 using port::timeval;
 using port::gettimeofday;
 using port::localtime_r;
-}  // namespace ROCKSDB_NAMESPACE
+}
 
 #else
 #include <time.h>
 #include <sys/time.h>
 #endif
+
+#endif  // STORAGE_LEVELDB_PORT_SYS_TIME_H_

@@ -20,8 +20,8 @@ public class BackupableDBOptionsTest {
       System.getProperty("java.io.tmpdir");
 
   @ClassRule
-  public static final RocksNativeLibraryResource ROCKS_NATIVE_LIBRARY_RESOURCE =
-      new RocksNativeLibraryResource();
+  public static final RocksMemoryResource rocksMemoryResource =
+      new RocksMemoryResource();
 
   @Rule
   public ExpectedException exception = ExpectedException.none();
@@ -45,7 +45,7 @@ public class BackupableDBOptionsTest {
       assertThat(backupableDBOptions.backupEnv()).
           isNull();
 
-      try(final Env env = new RocksMemEnv(Env.getDefault())) {
+      try(final Env env = new RocksMemEnv()) {
         backupableDBOptions.setBackupEnv(env);
         assertThat(backupableDBOptions.backupEnv())
             .isEqualTo(env);

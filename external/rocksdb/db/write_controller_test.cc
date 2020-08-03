@@ -8,9 +8,9 @@
 #include "db/write_controller.h"
 
 #include "rocksdb/env.h"
-#include "test_util/testharness.h"
+#include "util/testharness.h"
 
-namespace ROCKSDB_NAMESPACE {
+namespace rocksdb {
 
 class WriteControllerTest : public testing::Test {};
 
@@ -18,7 +18,7 @@ class TimeSetEnv : public EnvWrapper {
  public:
   explicit TimeSetEnv() : EnvWrapper(nullptr) {}
   uint64_t now_micros_ = 6666;
-  uint64_t NowNanos() override { return now_micros_ * std::milli::den; }
+  virtual uint64_t NowNanos() override { return now_micros_ * std::milli::den; }
 };
 
 TEST_F(WriteControllerTest, ChangeDelayRateTest) {
@@ -127,7 +127,7 @@ TEST_F(WriteControllerTest, SanityTest) {
   ASSERT_FALSE(controller.IsStopped());
 }
 
-}  // namespace ROCKSDB_NAMESPACE
+}  // namespace rocksdb
 
 int main(int argc, char** argv) {
   ::testing::InitGoogleTest(&argc, argv);

@@ -1,4 +1,3 @@
-// Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
 // Copyright (c) 2011 The LevelDB Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file. See the AUTHORS file for names of contributors.
@@ -10,20 +9,21 @@
 #include <string>
 #include <vector>
 
-#include "db/db_impl/db_impl.h"
-#include "rocksdb/compaction_filter.h"
 #include "rocksdb/db.h"
 #include "rocksdb/env.h"
+#include "rocksdb/compaction_filter.h"
 #include "rocksdb/merge_operator.h"
-#include "rocksdb/utilities/db_ttl.h"
 #include "rocksdb/utilities/utility_db.h"
+#include "rocksdb/utilities/db_ttl.h"
+#include "db/db_impl.h"
 
 #ifdef _WIN32
 // Windows API macro interference
 #undef GetCurrentTime
 #endif
 
-namespace ROCKSDB_NAMESPACE {
+
+namespace rocksdb {
 
 class DBWithTTLImpl : public DBWithTTL {
  public:
@@ -33,8 +33,6 @@ class DBWithTTLImpl : public DBWithTTL {
   explicit DBWithTTLImpl(DB* db);
 
   virtual ~DBWithTTLImpl();
-
-  virtual Status Close() override;
 
   Status CreateColumnFamilyWithTtl(const ColumnFamilyOptions& options,
                                    const std::string& column_family_name,
@@ -100,10 +98,6 @@ class DBWithTTLImpl : public DBWithTTL {
   void SetTtl(int32_t ttl) override { SetTtl(DefaultColumnFamily(), ttl); }
 
   void SetTtl(ColumnFamilyHandle *h, int32_t ttl) override;
-
- private:
-  // remember whether the Close completes or not
-  bool closed_;
 };
 
 class TtlIterator : public Iterator {
@@ -129,7 +123,7 @@ class TtlIterator : public Iterator {
 
   Slice key() const override { return iter_->key(); }
 
-  int32_t ttl_timestamp() const {
+  int32_t timestamp() const {
     return DecodeFixed32(iter_->value().data() + iter_->value().size() -
                          DBWithTTLImpl::kTSLength);
   }
@@ -357,5 +351,5 @@ class TtlMergeOperator : public MergeOperator {
   std::shared_ptr<MergeOperator> user_merge_op_;
   Env* env_;
 };
-}  // namespace ROCKSDB_NAMESPACE
+}
 #endif  // ROCKSDB_LITE

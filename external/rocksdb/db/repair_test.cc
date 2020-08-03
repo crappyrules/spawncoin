@@ -9,15 +9,15 @@
 #include <string>
 #include <vector>
 
-#include "db/db_impl/db_impl.h"
+#include "db/db_impl.h"
 #include "db/db_test_util.h"
-#include "file/file_util.h"
 #include "rocksdb/comparator.h"
 #include "rocksdb/db.h"
 #include "rocksdb/transaction_log.h"
+#include "util/file_util.h"
 #include "util/string_util.h"
 
-namespace ROCKSDB_NAMESPACE {
+namespace rocksdb {
 
 #ifndef ROCKSDB_LITE
 class RepairTest : public DBTestBase {
@@ -74,9 +74,7 @@ TEST_F(RepairTest, CorruptManifest) {
 
   Close();
   ASSERT_OK(env_->FileExists(manifest_path));
-
-  LegacyFileSystemWrapper fs(env_);
-  CreateFile(&fs, manifest_path, "blah", false /* use_fsync */);
+  CreateFile(env_, manifest_path, "blah");
   ASSERT_OK(RepairDB(dbname_, CurrentOptions()));
   Reopen(CurrentOptions());
 
@@ -155,9 +153,7 @@ TEST_F(RepairTest, CorruptSst) {
   Flush();
   auto sst_path = GetFirstSstPath();
   ASSERT_FALSE(sst_path.empty());
-
-  LegacyFileSystemWrapper fs(env_);
-  CreateFile(&fs, sst_path, "blah", false /* use_fsync */);
+  CreateFile(env_, sst_path, "blah");
 
   Close();
   ASSERT_OK(RepairDB(dbname_, CurrentOptions()));
@@ -317,7 +313,6 @@ TEST_F(RepairTest, RepairColumnFamilyOptions) {
     ASSERT_EQ(comparator_name,
               fname_and_props.second->comparator_name);
   }
-  Close();
 
   // Also check comparator when it's provided via "unknown" CF options
   ASSERT_OK(RepairDB(dbname_, opts, {{"default", opts}},
@@ -351,7 +346,7 @@ TEST_F(RepairTest, DbNameContainsTrailingSlash) {
   ASSERT_EQ(Get("key"), "val");
 }
 #endif  // ROCKSDB_LITE
-}  // namespace ROCKSDB_NAMESPACE
+}  // namespace rocksdb
 
 int main(int argc, char** argv) {
   ::testing::InitGoogleTest(&argc, argv);

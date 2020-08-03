@@ -1,38 +1,209 @@
-#### Spawncoin is a fun, fast, and easy way to send money to friends and businesses
+# Spawncoin
+Spawncoin is a fast and easy way to send money to friends and businesses.
 
-### Contributing to Spawncoin
+### Installing
 
-We are a community of people across the world giving our time to make this software better. There are many ways you can help or join us:
+We offer binary images of the latest releases here: https://github.com/spawncoin/spawncoin/releases/latest
 
--   If you'd like to report a bug, [fill out a bug report](https://github.com/spawncoin/spawncoin/issues/new?template=bug_report.md)
--   If you'd like to submit code for a bug you fixed, [submit a pull-request](https://github.com/spawncoin/spawncoin/compare)
--   If you're a tester submitting tests you've done on a Release Candidate, [click here](https://github.com/spawncoin/spawncoin/issues/new?template=release-candidate.md)
--   If you're a beginner developer, and want a list of easy things you can accomplish to help, [click here for a list of TODOs](https://github.com/spawncoin/spawncoin/labels/GOOD%20FIRST%20ISSUE)
--   **Everyone else just click the ★ star at the top of this repository 😊 It really helps us out!**
+If you would like to compile yourself, read on.
 
-### Installing Spawncoin
+### How To Compile
+##### Build Optimization
 
-To use Spawncoin, you'll need a way to connect to the network, and a wallet to hold your funds. This software includes those things for you, you can compile it yourself, or you can download the ones that we have compiled for you.
+The CMake build system will, by default, create optimized native builds for your particular system type when you build the software. Using this method, the binaries created provide a better experience and all-together faster performance.
 
-**Click here to download: https://github.com/spawncoin/spawncoin/releases**
+##### Making Portable Binaries
 
-To compile from sourcecode yourself, [click here for build instructions](https://github.com/spawncoin/spawncoin/blob/development/COMPILE.md).
+However, if you wish to create portable binaries that can be shared between systems, specify ``-DARCH=default` in your CMake arguments during the build process. Note that portable binaries will have a noticable difference in performance than native binaries. For this reason, it is always best to build for your particular system if possible.
 
-### A note for contributing developers
+#### Linux
 
-Hello, and thank you for helping us! Our work makes use of many brilliant projects from other communities who contributed their code which helped us get to where we are now. To make sure we're always doing things the right way, we try to make sure we get the proper license header in every file we modify. By the terms of this project's license, any open source project may use our software, but the licenses may only be appended to, not altered.
+##### Prerequisites
 
-See [src/config/CryptoNoteConfig.h](https://github.com/spawncoin/spawncoin/src/config/CryptoNoteConfig.h) for an example.
+You will need the following packages: [Boost](https://www.boost.org/), [OpenSSL](https://www.openssl.org/), cmake (3.8 or higher), make, and git.
+
+You will also need either GCC/G++, or Clang.
+
+If you are using GCC, you will need GCC-7.0 or higher.
+
+If you are using Clang, you will need Clang 6.0 or higher. You will also need libstdc++\-6.0 or higher.
+
+##### Ubuntu, using GCC
+
+- `sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y`
+- `sudo apt-get update`
+- `sudo apt-get install aptitude -y`
+- `sudo aptitude install -y build-essential g++-8 gcc-8 git libboost-all-dev python-pip libssl-dev`
+- `sudo pip install cmake`
+- `export CC=gcc-8`
+- `export CXX=g++-8`
+- `git clone -b master --single-branch https://github.com/spawncoin/spawncoin`
+- `cd spawncoin`
+- `mkdir build`
+- `cd build`
+- `cmake ..`
+- `make`
+
+The binaries will be in the `src` folder when you are complete.
+
+- `cd src`
+- `./Spawnd --version`
+
+##### Ubuntu, using Clang
+
+- `sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y`
+- `wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -`
+
+You need to modify the below command for your version of ubuntu - see https://apt.llvm.org/
+
+* Ubuntu 14.04 (Trusty)
+- `sudo add-apt-repository "deb https://apt.llvm.org/trusty/ llvm-toolchain-trusty 6.0 main"`
+
+* Ubuntu 16.04 (Xenial)
+- `sudo add-apt-repository "deb https://apt.llvm.org/xenial/ llvm-toolchain-xenial 6.0 main"`
+
+* Ubuntu 18.04 (Bionic)
+- `sudo add-apt-repository "deb https://apt.llvm.org/bionic/ llvm-toolchain-bionic 6.0 main"`
+
+- `sudo apt-get update`
+- `sudo apt-get install aptitude -y`
+- `sudo aptitude install -y -o Aptitude::ProblemResolver::SolutionCost='100*canceled-actions,200*removals' build-essential clang-6.0 libstdc++-7-dev git libboost-all-dev python-pip libssl-dev`
+- `sudo pip install cmake`
+- `export CC=clang-6.0`
+- `export CXX=clang++-6.0`
+- `git clone -b master --single-branch https://github.com/spawncoin/spawncoin`
+- `cd spawncoin`
+- `mkdir build`
+- `cd build`
+- `cmake ..`
+- `make`
+
+The binaries will be in the `src` folder when you are complete.
+
+- `cd src`
+- `./Spawnd --version`
+
+##### Generic Linux
+
+Ensure you have the dependencies listed above.
+
+If you want to use clang, ensure you set the environment variables `CC` and `CXX`.
+See the ubuntu instructions for an example.
+
+- `git clone -b master --single-branch https://github.com/spawncoin/spawncoin`
+- `cd spawncoin`
+- `mkdir build`
+- `cd build`
+- `cmake ..`
+- `make`
+
+The binaries will be in the `src` folder when you are complete.
+
+- `cd src`
+- `./Spawnd --version`
+
+#### OSX/Apple, using GCC
+
+##### Prerequisites
+
+- Install XCode and Developer Tools.
+
+##### Building
+
+- `which brew || /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"`
+- `brew install --force cmake boost llvm gcc@8 openssl`
+- `export CC=gcc-8`
+- `export CXX=g++-8`
+- `git clone -b master --single-branch https://github.com/spawncoin/spawncoin`
+- `cd spawncoin`
+- `mkdir build`
+- `cd build`
+- `cmake ..`
+- `make`
+
+The binaries will be in the `src` folder when you are complete.
+
+- `cd src`
+- `./Spawnd --version`
+
+#### OSX/Apple, using Clang
+
+##### Prerequisites
+
+- Install XCode and Developer Tools.
+
+##### Building
+
+- `which brew || /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"`
+- `brew install --force cmake boost llvm openssl`
+- `export CC=/usr/local/opt/llvm/bin/clang`
+- `export CXX=/usr/local/opt/llvm/bin/clang++`
+- `git clone -b master --single-branch https://github.com/spawncoin/spawncoin`
+- `cd spawncoin`
+- `mkdir build`
+- `cd build`
+- `cmake ..`
+- `make`
+
+The binaries will be in the `src` folder when you are complete.
+
+- `cd src`
+- `./Spawnd --version`
+
+
+#### Windows
+
+##### Prerequisites
+
+You can build for 32-bit or 64-bit Windows. **If you're not sure, pick 64-bit.**
+
+- Install [Visual Studio 2017 Community Edition](https://www.visualstudio.com/thank-you-downloading-visual-studio/?sku=Community&rel=15&page=inlineinstall)
+- When installing Visual Studio, it is **required** that you install **Desktop development with C++**
+- Install the latest version of Boost (currently Boost 1.68). Select the appropriate version for your system:
+  - [Boost 64-bit](https://bintray.com/boostorg/release/download_file?file_path=1.68.0%2Fbinaries%2Fboost_1_68_0-msvc-14.1-64.exe)
+  - [Boost 32-bit](https://bintray.com/boostorg/release/download_file?file_path=1.68.0%2Fbinaries%2Fboost_1_68_0-msvc-14.1-32.exe)
+- Install the latest full version of OpenSSL (currently OpenSSL 1.1.1g). Select the appropriate version for your system:
+  - [OpenSSL 64-bit](https://slproweb.com/download/Win64OpenSSL-1_1_1g.exe)
+  - [OpenSSL 32-bit](https://slproweb.com/download/Win32OpenSSL-1_1_1g.exe)
+
+##### Building
+
+For 64-bit:
+- From the start menu, open 'x64 Native Tools Command Prompt for vs2017'.
+- `cd <your_spawncoin_directory>`
+- `mkdir build`
+- `cd build`
+- `set PATH="C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin";%PATH%`
+- `cmake -G "Visual Studio 15 2017 Win64" .. -DBOOST_ROOT=C:/local/boost_1_68_0`
+- `MSBuild Spawncoin.sln /p:Configuration=Release /m`
+
+For 32-bit:
+- From the start menu, open 'x86 Native Tools Command Prompt for vs2017'.
+- `cd <your_spawncoin_directory>`
+- `mkdir build`
+- `cd build`
+- `set PATH="C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin";%PATH%`
+- `cmake -G "Visual Studio 15 2017" .. -DBOOST_ROOT=C:/local/boost_1_68_0`
+- `MSBuild Spawncoin.sln /p:Configuration=Release /p:Platform=Win32 /m`
+
+The binaries will be in the `src/Release` folder when you are complete.
+
+- `cd src`
+- `cd Release`
+- `Spawnd.exe --version`
+
+#### Thanks
+Cryptonote Developers, Bytecoin Developers, Monero Developers, Forknote Project, Turtlecoin Community, Spawncoin Developers
+
+### Copypasta for license when editing files
+
+Hi Spawncoin contributor, thanks for forking and sending back Pull Requests. Extensive docs about contributing are in the works or elsewhere. For now this is the bit we need to get into all the files we touch. Please add it to the top of the files, see [src/CryptoNoteConfig.h](https://github.com/spawncoin/spawncoin/commit/28cfef2575f2d767f6e512f2a4017adbf44e610e) for an example.
 
 ```
 // Copyright (c) 2012-2017, The CryptoNote developers, The Bytecoin developers
 // Copyright (c) 2014-2018, The Monero Project
-// Copyright (c) 2018-2020, The TurtleCoin Developers
-// Copyright (c)      2020, the Spawncoin Developers
+// Copyright (c) 2018-2019, The Turtlecoin Developers
+// Copyright (c) 2020, The Spawncoin Developers
 //
 // Please see the included LICENSE file for more information.
 ```
-
-### Contributing Projects
-
-[![cryptonote](https://user-images.githubusercontent.com/34389545/72484723-d84bf700-37ca-11ea-812e-e24cd7bf9fca.png)](https://cryptonote.org/)[![bytecoin](https://user-images.githubusercontent.com/34389545/72484467-ef3e1980-37c9-11ea-903d-3d1266e9c4c2.png)](https://bytecoin.org/)[![monero](https://user-images.githubusercontent.com/34389545/72484448-e0576700-37c9-11ea-934a-15a7d9231709.png)](https://web.getmonero.org/)[![forknote](https://user-images.githubusercontent.com/34389545/72484430-d59cd200-37c9-11ea-8529-e06ae2426dca.png)](http://forknote.net/)[![turtlecoin](https://user-images.githubusercontent.com/34389545/72484404-c0c03e80-37c9-11ea-8754-0b5a8e797965.png)](https://turtlecoin.lol)

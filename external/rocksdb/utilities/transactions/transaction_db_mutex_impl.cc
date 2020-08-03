@@ -14,12 +14,12 @@
 
 #include "rocksdb/utilities/transaction_db_mutex.h"
 
-namespace ROCKSDB_NAMESPACE {
+namespace rocksdb {
 
 class TransactionDBMutexImpl : public TransactionDBMutex {
  public:
   TransactionDBMutexImpl() {}
-  ~TransactionDBMutexImpl() override {}
+  ~TransactionDBMutexImpl() {}
 
   Status Lock() override;
 
@@ -36,7 +36,7 @@ class TransactionDBMutexImpl : public TransactionDBMutex {
 class TransactionDBCondVarImpl : public TransactionDBCondVar {
  public:
   TransactionDBCondVarImpl() {}
-  ~TransactionDBCondVarImpl() override {}
+  ~TransactionDBCondVarImpl() {}
 
   Status Wait(std::shared_ptr<TransactionDBMutex> mutex) override;
 
@@ -130,6 +130,6 @@ Status TransactionDBCondVarImpl::WaitFor(
   return s;
 }
 
-}  // namespace ROCKSDB_NAMESPACE
+}  // namespace rocksdb
 
 #endif  // ROCKSDB_LITE

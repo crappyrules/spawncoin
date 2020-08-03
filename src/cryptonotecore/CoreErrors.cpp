@@ -17,11 +17,10 @@
 
 #include "CoreErrors.h"
 
-namespace CryptoNote
-{
-    namespace error
-    {
-        CoreErrorCategory CoreErrorCategory::INSTANCE;
+namespace CryptoNote {
+namespace error {
 
-    }
-} // namespace CryptoNote
+CoreErrorCategory CoreErrorCategory::INSTANCE;
+
+}
+}

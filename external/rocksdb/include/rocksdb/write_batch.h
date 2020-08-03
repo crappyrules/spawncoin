@@ -22,17 +22,17 @@
 // non-const method, all threads accessing the same WriteBatch must use
 // external synchronization.
 
-#pragma once
+#ifndef STORAGE_ROCKSDB_INCLUDE_WRITE_BATCH_H_
+#define STORAGE_ROCKSDB_INCLUDE_WRITE_BATCH_H_
 
-#include <stdint.h>
 #include <atomic>
-#include <memory>
+#include <stack>
 #include <string>
-#include <vector>
+#include <stdint.h>
 #include "rocksdb/status.h"
 #include "rocksdb/write_batch_base.h"
 
-namespace ROCKSDB_NAMESPACE {
+namespace rocksdb {
 
 class Slice;
 class ColumnFamilyHandle;
@@ -61,7 +61,6 @@ struct SavePoint {
 class WriteBatch : public WriteBatchBase {
  public:
   explicit WriteBatch(size_t reserved_bytes = 0, size_t max_bytes = 0);
-  explicit WriteBatch(size_t reserved_bytes, size_t max_bytes, size_t ts_sz);
   ~WriteBatch() override;
 
   using WriteBatchBase::Put;
@@ -271,7 +270,7 @@ class WriteBatch : public WriteBatchBase {
     virtual bool Continue();
 
    protected:
-    friend class WriteBatchInternal;
+    friend class WriteBatch;
     virtual bool WriteAfterCommit() const { return true; }
     virtual bool WriteBeforePrepare() const { return false; }
   };
@@ -284,7 +283,7 @@ class WriteBatch : public WriteBatchBase {
   size_t GetDataSize() const { return rep_.size(); }
 
   // Returns the number of updates in the batch
-  uint32_t Count() const;
+  int Count() const;
 
   // Returns true if PutCF will be called during Iterate
   bool HasPut() const;
@@ -313,12 +312,6 @@ class WriteBatch : public WriteBatchBase {
   // Returns trie if MarkRollback will be called during Iterate
   bool HasRollback() const;
 
-  // Assign timestamp to write batch
-  Status AssignTimestamp(const Slice& ts);
-
-  // Assign timestamps to write batch
-  Status AssignTimestamps(const std::vector<Slice>& ts_list);
-
   using WriteBatchBase::GetWriteBatch;
   WriteBatch* GetWriteBatch() override { return this; }
 
@@ -345,7 +338,7 @@ class WriteBatch : public WriteBatchBase {
   // remove duplicate keys. Remove it when the hack is replaced with a proper
   // solution.
   friend class WriteBatchWithIndex;
-  std::unique_ptr<SavePoints> save_points_;
+  SavePoints* save_points_;
 
   // When sending a WriteBatch through WriteImpl we might want to
   // specify that only the first x records of the batch be written to
@@ -369,9 +362,10 @@ class WriteBatch : public WriteBatchBase {
 
  protected:
   std::string rep_;  // See comment in write_batch.cc for the format of rep_
-  const size_t timestamp_size_;
 
   // Intentionally copyable
 };
 
-}  // namespace ROCKSDB_NAMESPACE
+}  // namespace rocksdb
+
+#endif  // STORAGE_ROCKSDB_INCLUDE_WRITE_BATCH_H_

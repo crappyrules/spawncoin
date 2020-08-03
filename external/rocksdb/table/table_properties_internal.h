@@ -8,8 +8,9 @@
 #include "rocksdb/status.h"
 #include "rocksdb/iterator.h"
 
-namespace ROCKSDB_NAMESPACE {
+namespace rocksdb {
 
+class InternalIterator;
 class BlockHandle;
 
 // Seek to the properties block.
@@ -27,4 +28,4 @@ Status SeekToCompressionDictBlock(InternalIterator* meta_iter, bool* is_found,
 Status SeekToRangeDelBlock(InternalIterator* meta_iter, bool* is_found,
                            BlockHandle* block_handle);
 
-}  // namespace ROCKSDB_NAMESPACE
+}  // namespace rocksdb

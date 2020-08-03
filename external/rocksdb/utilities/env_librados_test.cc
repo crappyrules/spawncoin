@@ -1,4 +1,3 @@
-// Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
 //  Copyright (c) 2016, Red Hat, Inc.  All rights reserved.
 //  This source code is licensed under both the GPLv2 (found in the
 //  COPYING file in the root directory) and Apache 2.0 License
@@ -9,7 +8,7 @@
 #include "rocksdb/utilities/env_librados.h"
 #include <rados/librados.hpp>
 #include "env/mock_env.h"
-#include "test_util/testharness.h"
+#include "util/testharness.h"
 
 #include "rocksdb/db.h"
 #include "rocksdb/slice.h"
@@ -45,7 +44,7 @@ private:
   high_resolution_clock::time_point _start;
 };
 
-namespace ROCKSDB_NAMESPACE {
+namespace rocksdb {
 
 class EnvLibradosTest : public testing::Test {
 public:
@@ -109,7 +108,7 @@ public:
 
 TEST_F(EnvLibradosTest, Basics) {
   uint64_t file_size;
-  std::unique_ptr<WritableFile> writable_file;
+  unique_ptr<WritableFile> writable_file;
   std::vector<std::string> children;
 
   ASSERT_OK(env_->CreateDir("/dir"));
@@ -151,8 +150,8 @@ TEST_F(EnvLibradosTest, Basics) {
   ASSERT_EQ(3U, file_size);
 
   // Check that opening non-existent file fails.
-  std::unique_ptr<SequentialFile> seq_file;
-  std::unique_ptr<RandomAccessFile> rand_file;
+  unique_ptr<SequentialFile> seq_file;
+  unique_ptr<RandomAccessFile> rand_file;
   ASSERT_TRUE(
     !env_->NewSequentialFile("/dir/non_existent", &seq_file, soptions_).ok());
   ASSERT_TRUE(!seq_file);
@@ -170,9 +169,9 @@ TEST_F(EnvLibradosTest, Basics) {
 }
 
 TEST_F(EnvLibradosTest, ReadWrite) {
-  std::unique_ptr<WritableFile> writable_file;
-  std::unique_ptr<SequentialFile> seq_file;
-  std::unique_ptr<RandomAccessFile> rand_file;
+  unique_ptr<WritableFile> writable_file;
+  unique_ptr<SequentialFile> seq_file;
+  unique_ptr<RandomAccessFile> rand_file;
   Slice result;
   char scratch[100];
 
@@ -211,7 +210,7 @@ TEST_F(EnvLibradosTest, ReadWrite) {
 
 TEST_F(EnvLibradosTest, Locks) {
   FileLock* lock = nullptr;
-  std::unique_ptr<WritableFile> writable_file;
+  unique_ptr<WritableFile> writable_file;
 
   ASSERT_OK(env_->CreateDir("/dir"));
 
@@ -230,7 +229,7 @@ TEST_F(EnvLibradosTest, Misc) {
   ASSERT_OK(env_->GetTestDirectory(&test_dir));
   ASSERT_TRUE(!test_dir.empty());
 
-  std::unique_ptr<WritableFile> writable_file;
+  unique_ptr<WritableFile> writable_file;
   ASSERT_TRUE(!env_->NewWritableFile("/a/b", &writable_file, soptions_).ok());
 
   ASSERT_OK(env_->NewWritableFile("/a", &writable_file, soptions_));
@@ -250,14 +249,14 @@ TEST_F(EnvLibradosTest, LargeWrite) {
     write_data.append(1, 'h');
   }
 
-  std::unique_ptr<WritableFile> writable_file;
+  unique_ptr<WritableFile> writable_file;
   ASSERT_OK(env_->CreateDir("/dir"));
   ASSERT_OK(env_->NewWritableFile("/dir/g", &writable_file, soptions_));
   ASSERT_OK(writable_file->Append("foo"));
   ASSERT_OK(writable_file->Append(write_data));
   writable_file.reset();
 
-  std::unique_ptr<SequentialFile> seq_file;
+  unique_ptr<SequentialFile> seq_file;
   Slice result;
   ASSERT_OK(env_->NewSequentialFile("/dir/g", &seq_file, soptions_));
   ASSERT_OK(seq_file->Read(3, &result, scratch));  // Read "foo".
@@ -283,7 +282,7 @@ TEST_F(EnvLibradosTest, FrequentlySmallWrite) {
     write_data.append(1, 'h');
   }
 
-  std::unique_ptr<WritableFile> writable_file;
+  unique_ptr<WritableFile> writable_file;
   ASSERT_OK(env_->CreateDir("/dir"));
   ASSERT_OK(env_->NewWritableFile("/dir/g", &writable_file, soptions_));
   ASSERT_OK(writable_file->Append("foo"));
@@ -293,7 +292,7 @@ TEST_F(EnvLibradosTest, FrequentlySmallWrite) {
   }
   writable_file.reset();
 
-  std::unique_ptr<SequentialFile> seq_file;
+  unique_ptr<SequentialFile> seq_file;
   Slice result;
   ASSERT_OK(env_->NewSequentialFile("/dir/g", &seq_file, soptions_));
   ASSERT_OK(seq_file->Read(3, &result, scratch));  // Read "foo".
@@ -318,7 +317,7 @@ TEST_F(EnvLibradosTest, Truncate) {
     write_data.append(1, 'h');
   }
 
-  std::unique_ptr<WritableFile> writable_file;
+  unique_ptr<WritableFile> writable_file;
   ASSERT_OK(env_->CreateDir("/dir"));
   ASSERT_OK(env_->NewWritableFile("/dir/g", &writable_file, soptions_));
   ASSERT_OK(writable_file->Append(write_data));
@@ -390,7 +389,7 @@ TEST_F(EnvLibradosTest, DBLoadKeysInRandomOrder) {
   Status s1 = DB::Open(options1, kDBPath1, &db1);
   assert(s1.ok());
 
-  ROCKSDB_NAMESPACE::Random64 r1(time(nullptr));
+  rocksdb::Random64 r1(time(nullptr));
 
   timer.Reset();
   for (int i = 0; i < max_loop; ++i) {
@@ -426,7 +425,7 @@ TEST_F(EnvLibradosTest, DBLoadKeysInRandomOrder) {
   Status s2 = DB::Open(options2, kDBPath2, &db2);
   assert(s2.ok());
 
-  ROCKSDB_NAMESPACE::Random64 r2(time(nullptr));
+  rocksdb::Random64 r2(time(nullptr));
 
   timer.Reset();
   for (int i = 0; i < max_loop; ++i) {
@@ -468,7 +467,7 @@ TEST_F(EnvLibradosTest, DBBulkLoadKeysInRandomOrder) {
   Status s1 = DB::Open(options1, kDBPath1, &db1);
   assert(s1.ok());
 
-  ROCKSDB_NAMESPACE::Random64 r1(time(nullptr));
+  rocksdb::Random64 r1(time(nullptr));
 
   timer.Reset();
   for (int i = 0; i < max_loop; ++i) {
@@ -507,7 +506,7 @@ TEST_F(EnvLibradosTest, DBBulkLoadKeysInRandomOrder) {
   Status s2 = DB::Open(options2, kDBPath2, &db2);
   assert(s2.ok());
 
-  ROCKSDB_NAMESPACE::Random64 r2(time(nullptr));
+  rocksdb::Random64 r2(time(nullptr));
 
   timer.Reset();
   for (int i = 0; i < max_loop; ++i) {
@@ -552,7 +551,7 @@ TEST_F(EnvLibradosTest, DBBulkLoadKeysInSequentialOrder) {
   Status s1 = DB::Open(options1, kDBPath1, &db1);
   assert(s1.ok());
 
-  ROCKSDB_NAMESPACE::Random64 r1(time(nullptr));
+  rocksdb::Random64 r1(time(nullptr));
 
   timer.Reset();
   for (int i = 0; i < max_loop; ++i) {
@@ -591,7 +590,7 @@ TEST_F(EnvLibradosTest, DBBulkLoadKeysInSequentialOrder) {
   Status s2 = DB::Open(options2, kDBPath2, &db2);
   assert(s2.ok());
 
-  ROCKSDB_NAMESPACE::Random64 r2(time(nullptr));
+  rocksdb::Random64 r2(time(nullptr));
 
   timer.Reset();
   for (int i = 0; i < max_loop; ++i) {
@@ -637,7 +636,8 @@ TEST_F(EnvLibradosTest, DBRandomRead) {
   Status s1 = DB::Open(options1, kDBPath1, &db1);
   assert(s1.ok());
 
-  ROCKSDB_NAMESPACE::Random64 r1(time(nullptr));
+  rocksdb::Random64 r1(time(nullptr));
+
 
   for (int i = 0; i < max_loop; ++i) {
     WriteBatch batch;
@@ -688,7 +688,7 @@ TEST_F(EnvLibradosTest, DBRandomRead) {
   Status s2 = DB::Open(options2, kDBPath2, &db2);
   assert(s2.ok());
 
-  ROCKSDB_NAMESPACE::Random64 r2(time(nullptr));
+  rocksdb::Random64 r2(time(nullptr));
 
   for (int i = 0; i < max_loop; ++i) {
     WriteBatch batch;
@@ -801,7 +801,7 @@ public:
 
 TEST_F(EnvLibradosMutipoolTest, Basics) {
   uint64_t file_size;
-  std::unique_ptr<WritableFile> writable_file;
+  unique_ptr<WritableFile> writable_file;
   std::vector<std::string> children;
   std::vector<std::string> v = {"/tmp/dir1", "/tmp/dir2", "/tmp/dir3", "/tmp/dir4", "dir"};
 
@@ -850,8 +850,8 @@ TEST_F(EnvLibradosMutipoolTest, Basics) {
     ASSERT_EQ(3U, file_size);
 
     // Check that opening non-existent file fails.
-    std::unique_ptr<SequentialFile> seq_file;
-    std::unique_ptr<RandomAccessFile> rand_file;
+    unique_ptr<SequentialFile> seq_file;
+    unique_ptr<RandomAccessFile> rand_file;
     ASSERT_TRUE(
       !env_->NewSequentialFile(dir_non_existent.c_str(), &seq_file, soptions_).ok());
     ASSERT_TRUE(!seq_file);
@@ -935,7 +935,7 @@ TEST_F(EnvLibradosMutipoolTest, DBBulkLoadKeysInRandomOrder) {
   Status s1 = DB::Open(options1, kDBPath1, &db1);
   assert(s1.ok());
 
-  ROCKSDB_NAMESPACE::Random64 r1(time(nullptr));
+  rocksdb::Random64 r1(time(nullptr));
 
   timer.Reset();
   for (int i = 0; i < max_loop; ++i) {
@@ -978,7 +978,7 @@ TEST_F(EnvLibradosMutipoolTest, DBBulkLoadKeysInRandomOrder) {
   }
   assert(s2.ok());
 
-  ROCKSDB_NAMESPACE::Random64 r2(time(nullptr));
+  rocksdb::Random64 r2(time(nullptr));
 
   timer.Reset();
   for (int i = 0; i < max_loop; ++i) {
@@ -1128,7 +1128,7 @@ TEST_F(EnvLibradosMutipoolTest, DBTransactionDB) {
   DestroyDB(kDBPath, options);
 }
 
-}  // namespace ROCKSDB_NAMESPACE
+}  // namespace rocksdb
 
 int main(int argc, char** argv) {
   ::testing::InitGoogleTest(&argc, argv);

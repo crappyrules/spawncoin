@@ -9,42 +9,42 @@
 #include "memtable/stl_wrappers.h"
 #include "rocksdb/db.h"
 #include "rocksdb/env.h"
-#include "test_util/testharness.h"
-#include "test_util/testutil.h"
 #include "util/hash.h"
 #include "util/kv_map.h"
 #include "util/string_util.h"
+#include "util/testharness.h"
+#include "util/testutil.h"
 #include "utilities/merge_operators.h"
 
 using std::unique_ptr;
 
-namespace ROCKSDB_NAMESPACE {
+namespace rocksdb {
 namespace {
 
-static const Comparator* kTestComparator = nullptr;
+static const Comparator* comparator;
 
 class KVIter : public Iterator {
  public:
   explicit KVIter(const stl_wrappers::KVMap* map)
       : map_(map), iter_(map_->end()) {}
-  bool Valid() const override { return iter_ != map_->end(); }
-  void SeekToFirst() override { iter_ = map_->begin(); }
-  void SeekToLast() override {
+  virtual bool Valid() const override { return iter_ != map_->end(); }
+  virtual void SeekToFirst() override { iter_ = map_->begin(); }
+  virtual void SeekToLast() override {
     if (map_->empty()) {
       iter_ = map_->end();
     } else {
       iter_ = map_->find(map_->rbegin()->first);
     }
   }
-  void Seek(const Slice& k) override {
+  virtual void Seek(const Slice& k) override {
     iter_ = map_->lower_bound(k.ToString());
   }
-  void SeekForPrev(const Slice& k) override {
+  virtual void SeekForPrev(const Slice& k) override {
     iter_ = map_->upper_bound(k.ToString());
     Prev();
   }
-  void Next() override { ++iter_; }
-  void Prev() override {
+  virtual void Next() override { ++iter_; }
+  virtual void Prev() override {
     if (iter_ == map_->begin()) {
       iter_ = map_->end();
       return;
@@ -52,9 +52,9 @@ class KVIter : public Iterator {
     --iter_;
   }
 
-  Slice key() const override { return iter_->first; }
-  Slice value() const override { return iter_->second; }
-  Status status() const override { return Status::OK(); }
+  virtual Slice key() const override { return iter_->first; }
+  virtual Slice value() const override { return iter_->second; }
+  virtual Status status() const override { return Status::OK(); }
 
  private:
   const stl_wrappers::KVMap* const map_;
@@ -74,7 +74,7 @@ void AssertItersEqual(Iterator* iter1, Iterator* iter2) {
 void DoRandomIteraratorTest(DB* db, std::vector<std::string> source_strings,
                             Random* rnd, int num_writes, int num_iter_ops,
                             int num_trigger_flush) {
-  stl_wrappers::KVMap map((stl_wrappers::LessOfComparator(kTestComparator)));
+  stl_wrappers::KVMap map((stl_wrappers::LessOfComparator(comparator)));
 
   for (int i = 0; i < num_writes; i++) {
     if (num_trigger_flush > 0 && i != 0 && i % num_trigger_flush == 0) {
@@ -171,9 +171,9 @@ class DoubleComparator : public Comparator {
  public:
   DoubleComparator() {}
 
-  const char* Name() const override { return "DoubleComparator"; }
+  virtual const char* Name() const override { return "DoubleComparator"; }
 
-  int Compare(const Slice& a, const Slice& b) const override {
+  virtual int Compare(const Slice& a, const Slice& b) const override {
 #ifndef CYGWIN
     double da = std::stod(a.ToString());
     double db = std::stod(b.ToString());
@@ -189,19 +189,19 @@ class DoubleComparator : public Comparator {
       return -1;
     }
   }
-  void FindShortestSeparator(std::string* /*start*/,
-                             const Slice& /*limit*/) const override {}
+  virtual void FindShortestSeparator(std::string* /*start*/,
+                                     const Slice& /*limit*/) const override {}
 
-  void FindShortSuccessor(std::string* /*key*/) const override {}
+  virtual void FindShortSuccessor(std::string* /*key*/) const override {}
 };
 
 class HashComparator : public Comparator {
  public:
   HashComparator() {}
 
-  const char* Name() const override { return "HashComparator"; }
+  virtual const char* Name() const override { return "HashComparator"; }
 
-  int Compare(const Slice& a, const Slice& b) const override {
+  virtual int Compare(const Slice& a, const Slice& b) const override {
     uint32_t ha = Hash(a.data(), a.size(), 66);
     uint32_t hb = Hash(b.data(), b.size(), 66);
     if (ha == hb) {
@@ -212,19 +212,19 @@ class HashComparator : public Comparator {
       return -1;
     }
   }
-  void FindShortestSeparator(std::string* /*start*/,
-                             const Slice& /*limit*/) const override {}
+  virtual void FindShortestSeparator(std::string* /*start*/,
+                                     const Slice& /*limit*/) const override {}
 
-  void FindShortSuccessor(std::string* /*key*/) const override {}
+  virtual void FindShortSuccessor(std::string* /*key*/) const override {}
 };
 
 class TwoStrComparator : public Comparator {
  public:
   TwoStrComparator() {}
 
-  const char* Name() const override { return "TwoStrComparator"; }
+  virtual const char* Name() const override { return "TwoStrComparator"; }
 
-  int Compare(const Slice& a, const Slice& b) const override {
+  virtual int Compare(const Slice& a, const Slice& b) const override {
     assert(a.size() >= 2);
     assert(b.size() >= 2);
     size_t size_a1 = static_cast<size_t>(a[0]);
@@ -244,10 +244,10 @@ class TwoStrComparator : public Comparator {
     }
     return a2.compare(b2);
   }
-  void FindShortestSeparator(std::string* /*start*/,
-                             const Slice& /*limit*/) const override {}
+  virtual void FindShortestSeparator(std::string* /*start*/,
+                                     const Slice& /*limit*/) const override {}
 
-  void FindShortSuccessor(std::string* /*key*/) const override {}
+  virtual void FindShortSuccessor(std::string* /*key*/) const override {}
 };
 }  // namespace
 
@@ -263,19 +263,19 @@ class ComparatorDBTest
 
  public:
   ComparatorDBTest() : env_(Env::Default()), db_(nullptr) {
-    kTestComparator = BytewiseComparator();
+    comparator = BytewiseComparator();
     dbname_ = test::PerThreadDBPath("comparator_db_test");
     BlockBasedTableOptions toptions;
     toptions.format_version = GetParam();
     last_options_.table_factory.reset(
-        ROCKSDB_NAMESPACE::NewBlockBasedTableFactory(toptions));
+        rocksdb::NewBlockBasedTableFactory(toptions));
     EXPECT_OK(DestroyDB(dbname_, last_options_));
   }
 
-  ~ComparatorDBTest() override {
+  ~ComparatorDBTest() {
     delete db_;
     EXPECT_OK(DestroyDB(dbname_, last_options_));
-    kTestComparator = BytewiseComparator();
+    comparator = BytewiseComparator();
   }
 
   DB* GetDB() { return db_; }
@@ -286,7 +286,7 @@ class ComparatorDBTest
     } else {
       comparator_guard.reset();
     }
-    kTestComparator = cmp;
+    comparator = cmp;
     last_options_.comparator = cmp;
   }
 
@@ -334,7 +334,7 @@ TEST_P(ComparatorDBTest, SimpleSuffixReverseComparator) {
 
   for (int rnd_seed = 301; rnd_seed < 316; rnd_seed++) {
     Options* opt = GetOptions();
-    opt->comparator = kTestComparator;
+    opt->comparator = comparator;
     DestroyAndReopen();
     Random rnd(rnd_seed);
 
@@ -360,7 +360,7 @@ TEST_P(ComparatorDBTest, Uint64Comparator) {
 
   for (int rnd_seed = 301; rnd_seed < 316; rnd_seed++) {
     Options* opt = GetOptions();
-    opt->comparator = kTestComparator;
+    opt->comparator = comparator;
     DestroyAndReopen();
     Random rnd(rnd_seed);
     Random64 rnd64(rnd_seed);
@@ -384,7 +384,7 @@ TEST_P(ComparatorDBTest, DoubleComparator) {
 
   for (int rnd_seed = 301; rnd_seed < 316; rnd_seed++) {
     Options* opt = GetOptions();
-    opt->comparator = kTestComparator;
+    opt->comparator = comparator;
     DestroyAndReopen();
     Random rnd(rnd_seed);
 
@@ -409,7 +409,7 @@ TEST_P(ComparatorDBTest, HashComparator) {
 
   for (int rnd_seed = 301; rnd_seed < 316; rnd_seed++) {
     Options* opt = GetOptions();
-    opt->comparator = kTestComparator;
+    opt->comparator = comparator;
     DestroyAndReopen();
     Random rnd(rnd_seed);
 
@@ -428,7 +428,7 @@ TEST_P(ComparatorDBTest, TwoStrComparator) {
 
   for (int rnd_seed = 301; rnd_seed < 316; rnd_seed++) {
     Options* opt = GetOptions();
-    opt->comparator = kTestComparator;
+    opt->comparator = comparator;
     DestroyAndReopen();
     Random rnd(rnd_seed);
 
@@ -652,7 +652,7 @@ TEST_P(ComparatorDBTest, SeparatorSuccessorRandomizeTest) {
   }
 }
 
-}  // namespace ROCKSDB_NAMESPACE
+}  // namespace rocksdb
 
 int main(int argc, char** argv) {
   ::testing::InitGoogleTest(&argc, argv);

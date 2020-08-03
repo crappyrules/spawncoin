@@ -3,7 +3,8 @@
 //  COPYING file in the root directory) and Apache 2.0 License
 //  (found in the LICENSE.Apache file in the root directory).
 //
-#pragma once
+#ifndef MERGE_HELPER_H
+#define MERGE_HELPER_H
 
 #include <deque>
 #include <string>
@@ -18,13 +19,14 @@
 #include "rocksdb/slice.h"
 #include "util/stop_watch.h"
 
-namespace ROCKSDB_NAMESPACE {
+namespace rocksdb {
 
 class Comparator;
 class Iterator;
 class Logger;
 class MergeOperator;
 class Statistics;
+class InternalIterator;
 
 class MergeHelper {
  public:
@@ -78,7 +80,7 @@ class MergeHelper {
   //
   // REQUIRED: The first key in the input is not corrupted.
   Status MergeUntil(InternalIterator* iter,
-                    CompactionRangeDelAggregator* range_del_agg = nullptr,
+                    RangeDelAggregator* range_del_agg = nullptr,
                     const SequenceNumber stop_before = 0,
                     const bool at_bottom = false);
 
@@ -191,4 +193,6 @@ class MergeOutputIterator {
   std::vector<Slice>::const_reverse_iterator it_values_;
 };
 
-}  // namespace ROCKSDB_NAMESPACE
+} // namespace rocksdb
+
+#endif

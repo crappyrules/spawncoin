@@ -12,29 +12,26 @@
 #include <set>
 
 #include "table/internal_iterator.h"
-#include "test_util/sync_point.h"
 
-namespace ROCKSDB_NAMESPACE {
+namespace rocksdb {
 
 // A internal wrapper class with an interface similar to Iterator that caches
 // the valid() and key() results for an underlying iterator.
 // This can help avoid virtual function calls and also gives better
 // cache locality.
-template <class TValue = Slice>
-class IteratorWrapperBase {
+class IteratorWrapper {
  public:
-  IteratorWrapperBase() : iter_(nullptr), valid_(false) {}
-  explicit IteratorWrapperBase(InternalIteratorBase<TValue>* _iter)
-      : iter_(nullptr) {
+  IteratorWrapper() : iter_(nullptr), valid_(false) {}
+  explicit IteratorWrapper(InternalIterator* _iter) : iter_(nullptr) {
     Set(_iter);
   }
-  ~IteratorWrapperBase() {}
-  InternalIteratorBase<TValue>* iter() const { return iter_; }
+  ~IteratorWrapper() {}
+  InternalIterator* iter() const { return iter_; }
 
   // Set the underlying Iterator to _iter and return
   // previous underlying Iterator.
-  InternalIteratorBase<TValue>* Set(InternalIteratorBase<TValue>* _iter) {
-    InternalIteratorBase<TValue>* old_iter = iter_;
+  InternalIterator* Set(InternalIterator* _iter) {
+    InternalIterator* old_iter = iter_;
 
     iter_ = _iter;
     if (iter_ == nullptr) {
@@ -50,80 +47,27 @@ class IteratorWrapperBase {
       if (!is_arena_mode) {
         delete iter_;
       } else {
-        iter_->~InternalIteratorBase<TValue>();
+        iter_->~InternalIterator();
       }
     }
   }
 
   // Iterator interface methods
-  bool Valid() const { return valid_; }
-  Slice key() const {
-    assert(Valid());
-    return result_.key;
-  }
-  TValue value() const {
-    assert(Valid());
-    return iter_->value();
-  }
+  bool Valid() const        { return valid_; }
+  Slice key() const         { assert(Valid()); return key_; }
+  Slice value() const       { assert(Valid()); return iter_->value(); }
   // Methods below require iter() != nullptr
-  Status status() const {
-    assert(iter_);
-    return iter_->status();
-  }
-  bool PrepareValue() {
-    assert(Valid());
-    if (result_.value_prepared) {
-      return true;
-    }
-    if (iter_->PrepareValue()) {
-      result_.value_prepared = true;
-      return true;
-    }
-
-    assert(!iter_->Valid());
-    valid_ = false;
-    return false;
-  }
-  void Next() {
-    assert(iter_);
-    valid_ = iter_->NextAndGetResult(&result_);
-    assert(!valid_ || iter_->status().ok());
-  }
-  void Prev() {
-    assert(iter_);
-    iter_->Prev();
-    Update();
-  }
-  void Seek(const Slice& k) {
-    assert(iter_);
-    iter_->Seek(k);
-    Update();
-  }
+  Status status() const     { assert(iter_); return iter_->status(); }
+  void Next()               { assert(iter_); iter_->Next();        Update(); }
+  void Prev()               { assert(iter_); iter_->Prev();        Update(); }
+  void Seek(const Slice& k) { assert(iter_); iter_->Seek(k);       Update(); }
   void SeekForPrev(const Slice& k) {
     assert(iter_);
     iter_->SeekForPrev(k);
     Update();
   }
-  void SeekToFirst() {
-    assert(iter_);
-    iter_->SeekToFirst();
-    Update();
-  }
-  void SeekToLast() {
-    assert(iter_);
-    iter_->SeekToLast();
-    Update();
-  }
-
-  bool MayBeOutOfLowerBound() {
-    assert(Valid());
-    return iter_->MayBeOutOfLowerBound();
-  }
-
-  bool MayBeOutOfUpperBound() {
-    assert(Valid());
-    return result_.may_be_out_of_upper_bound;
-  }
+  void SeekToFirst()        { assert(iter_); iter_->SeekToFirst(); Update(); }
+  void SeekToLast()         { assert(iter_); iter_->SeekToLast();  Update(); }
 
   void SetPinnedItersMgr(PinnedIteratorsManager* pinned_iters_mgr) {
     assert(iter_);
@@ -138,31 +82,26 @@ class IteratorWrapperBase {
     return iter_->IsValuePinned();
   }
 
-  bool IsValuePrepared() const {
-    return result_.value_prepared;
-  }
-
  private:
   void Update() {
     valid_ = iter_->Valid();
     if (valid_) {
+      key_ = iter_->key();
       assert(iter_->status().ok());
-      result_.key = iter_->key();
-      result_.may_be_out_of_upper_bound = true;
-      result_.value_prepared = false;
     }
   }
 
-  InternalIteratorBase<TValue>* iter_;
-  IterateResult result_;
+  InternalIterator* iter_;
   bool valid_;
+  Slice key_;
 };
-
-using IteratorWrapper = IteratorWrapperBase<Slice>;
 
 class Arena;
 // Return an empty iterator (yields nothing) allocated from arena.
-template <class TValue = Slice>
-extern InternalIteratorBase<TValue>* NewEmptyInternalIterator(Arena* arena);
+extern InternalIterator* NewEmptyInternalIterator(Arena* arena);
 
-}  // namespace ROCKSDB_NAMESPACE
+// Return an empty iterator with the specified status, allocated arena.
+extern InternalIterator* NewErrorInternalIterator(const Status& status,
+                                                  Arena* arena);
+
+}  // namespace rocksdb

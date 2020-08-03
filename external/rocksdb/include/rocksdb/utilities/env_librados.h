@@ -2,8 +2,8 @@
 //  This source code is licensed under both the GPLv2 (found in the
 //  COPYING file in the root directory) and Apache 2.0 License
 //  (found in the LICENSE.Apache file in the root directory).
-
-#pragma once
+#ifndef ROCKSDB_UTILITIES_ENV_LIBRADOS_H
+#define ROCKSDB_UTILITIES_ENV_LIBRADOS_H
 
 #include <memory>
 #include <string>
@@ -13,7 +13,7 @@
 
 #include <rados/librados.hpp>
 
-namespace ROCKSDB_NAMESPACE {
+namespace rocksdb {
 class LibradosWritableFile;
 
 class EnvLibrados : public EnvWrapper {
@@ -172,4 +172,5 @@ class EnvLibrados : public EnvWrapper {
   librados::IoCtx* _GetIoctx(const std::string& prefix);
   friend class LibradosWritableFile;
 };
-}  // namespace ROCKSDB_NAMESPACE
+}
+#endif

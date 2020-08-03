@@ -1,21 +1,26 @@
-// Copyright (c) 2018-2019, The TurtleCoin Developers
-//
+// Copyright (c) 2018, The TurtleCoin Developers
+// 
 // Please see the included LICENSE file for more information.
 
 /////////////////////////////
 #include <zedwallet++/Sync.h>
 /////////////////////////////
 
-#include <common/SignalHandler.h>
+#include <Common/SignalHandler.h>
+
 #include <config/WalletConfig.h>
+
 #include <iostream>
+
 #include <thread>
-#include <utilities/ColouredMsg.h>
+
+#include <Utilities/ColouredMsg.h>
 #include <zedwallet++/CommandImplementations.h>
 
 void syncWallet(const std::shared_ptr<WalletBackend> walletBackend)
 {
-    auto [walletBlockCount, localDaemonBlockCount, networkBlockCount] = walletBackend->getSyncStatus();
+    auto [walletBlockCount, localDaemonBlockCount, networkBlockCount]
+        = walletBackend->getSyncStatus();
 
     /* Fully synced */
     if (walletBlockCount == networkBlockCount)
@@ -60,9 +65,11 @@ void syncWallet(const std::shared_ptr<WalletBackend> walletBackend)
 
     while (walletBlockCount < localDaemonBlockCount)
     {
-        auto [tmpWalletBlockCount, localDaemonBlockCount, networkBlockCount] = walletBackend->getSyncStatus();
+        auto [tmpWalletBlockCount, localDaemonBlockCount, networkBlockCount]
+            = walletBackend->getSyncStatus();
 
-        std::cout << SuccessMsg(tmpWalletBlockCount) << " of " << InformationMsg(localDaemonBlockCount) << std::endl;
+        std::cout << SuccessMsg(tmpWalletBlockCount) << " of "
+                  << InformationMsg(localDaemonBlockCount) << std::endl;
 
         if (walletBlockCount == tmpWalletBlockCount)
         {
@@ -75,7 +82,7 @@ void syncWallet(const std::shared_ptr<WalletBackend> walletBackend)
 
         /* Get any transactions in between the previous height and the new
            height */
-        for (const auto &tx : walletBackend->getTransactionsRange(walletBlockCount, tmpWalletBlockCount))
+        for (const auto tx : walletBackend->getTransactionsRange(walletBlockCount, tmpWalletBlockCount))
         {
             /* Don't print out fusion transactions */
             if (!tx.isFusionTransaction())
@@ -112,7 +119,9 @@ void syncWallet(const std::shared_ptr<WalletBackend> walletBackend)
             stream << "Syncing may be stuck. Ensure your daemon or remote "
                       "node is online, and not syncing.\n(Syncing often stalls "
                       "wallet operation)\nGive the daemon a restart if possible.\n"
-                   << "If this persists, visit " << WalletConfig::contactLink << " for support.";
+                   << "If this persists, visit "
+                   << WalletConfig::contactLink
+                   << " for support.";
 
             std::cout << WarningMsg(stream.str()) << std::endl;
         }

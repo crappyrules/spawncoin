@@ -18,29 +18,13 @@
 #include <signal.h>
 #include <stdio.h>
 #include <string.h>
-#include <sys/resource.h>
-#include <sys/syscall.h>
 #include <sys/time.h>
+#include <sys/resource.h>
 #include <unistd.h>
 #include <cstdlib>
-#include "logging/logging.h"
+#include "util/logging.h"
 
-namespace ROCKSDB_NAMESPACE {
-
-// We want to give users opportunity to default all the mutexes to adaptive if
-// not specified otherwise. This enables a quick way to conduct various
-// performance related experiements.
-//
-// NB! Support for adaptive mutexes is turned on by definining
-// ROCKSDB_PTHREAD_ADAPTIVE_MUTEX during the compilation. If you use RocksDB
-// build environment then this happens automatically; otherwise it's up to the
-// consumer to define the identifier.
-#ifdef ROCKSDB_DEFAULT_TO_ADAPTIVE_MUTEX
-extern const bool kDefaultToAdaptiveMutex = true;
-#else
-extern const bool kDefaultToAdaptiveMutex = false;
-#endif
-
+namespace rocksdb {
 namespace port {
 
 static int PthreadCall(const char* label, int result) {
@@ -193,8 +177,7 @@ int GetMaxOpenFiles() {
     return -1;
   }
   // protect against overflow
-  if (static_cast<uintmax_t>(no_files_limit.rlim_cur) >=
-      static_cast<uintmax_t>(std::numeric_limits<int>::max())) {
+  if (no_files_limit.rlim_cur >= std::numeric_limits<int>::max()) {
     return std::numeric_limits<int>::max();
   }
   return static_cast<int>(no_files_limit.rlim_cur);
@@ -218,47 +201,6 @@ void cacheline_aligned_free(void *memblock) {
   free(memblock);
 }
 
-static size_t GetPageSize() {
-#if defined(OS_LINUX) || defined(_SC_PAGESIZE)
-  long v = sysconf(_SC_PAGESIZE);
-  if (v >= 1024) {
-    return static_cast<size_t>(v);
-  }
-#endif
-  // Default assume 4KB
-  return 4U * 1024U;
-}
-
-const size_t kPageSize = GetPageSize();
-
-void SetCpuPriority(ThreadId id, CpuPriority priority) {
-#ifdef OS_LINUX
-  sched_param param;
-  param.sched_priority = 0;
-  switch (priority) {
-    case CpuPriority::kHigh:
-      sched_setscheduler(id, SCHED_OTHER, &param);
-      setpriority(PRIO_PROCESS, id, -20);
-      break;
-    case CpuPriority::kNormal:
-      sched_setscheduler(id, SCHED_OTHER, &param);
-      setpriority(PRIO_PROCESS, id, 0);
-      break;
-    case CpuPriority::kLow:
-      sched_setscheduler(id, SCHED_OTHER, &param);
-      setpriority(PRIO_PROCESS, id, 19);
-      break;
-    case CpuPriority::kIdle:
-      sched_setscheduler(id, SCHED_IDLE, &param);
-      break;
-    default:
-      assert(false);
-  }
-#else
-  (void)id;
-  (void)priority;
-#endif
-}
 
 }  // namespace port
-}  // namespace ROCKSDB_NAMESPACE
+}  // namespace rocksdb

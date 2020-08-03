@@ -33,7 +33,7 @@ public enum IndexType {
     return value_;
   }
 
-  IndexType(byte value) {
+  private IndexType(byte value) {
     value_ = value;
   }
 

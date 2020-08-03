@@ -12,13 +12,13 @@
 #include <algorithm>
 #include <type_traits>
 
+#include "util/arena.h"
 #include "db/memtable.h"
-#include "memory/arena.h"
 #include "memtable/stl_wrappers.h"
 #include "port/port.h"
 #include "util/mutexlock.h"
 
-namespace ROCKSDB_NAMESPACE {
+namespace rocksdb {
 namespace {
 
 using namespace stl_wrappers;
@@ -31,19 +31,20 @@ class VectorRep : public MemTableRep {
   // single buffer and pass that in as the parameter to Insert)
   // REQUIRES: nothing that compares equal to key is currently in the
   // collection.
-  void Insert(KeyHandle handle) override;
+  virtual void Insert(KeyHandle handle) override;
 
   // Returns true iff an entry that compares equal to key is in the collection.
-  bool Contains(const char* key) const override;
+  virtual bool Contains(const char* key) const override;
 
-  void MarkReadOnly() override;
+  virtual void MarkReadOnly() override;
 
-  size_t ApproximateMemoryUsage() override;
+  virtual size_t ApproximateMemoryUsage() override;
 
-  void Get(const LookupKey& k, void* callback_args,
-           bool (*callback_func)(void* arg, const char* entry)) override;
+  virtual void Get(const LookupKey& k, void* callback_args,
+                   bool (*callback_func)(void* arg,
+                                         const char* entry)) override;
 
-  ~VectorRep() override {}
+  virtual ~VectorRep() override { }
 
   class Iterator : public MemTableRep::Iterator {
     class VectorRep* vrep_;
@@ -61,40 +62,41 @@ class VectorRep : public MemTableRep {
     // Initialize an iterator over the specified collection.
     // The returned iterator is not valid.
     // explicit Iterator(const MemTableRep* collection);
-    ~Iterator() override{};
+    virtual ~Iterator() override { };
 
     // Returns true iff the iterator is positioned at a valid node.
-    bool Valid() const override;
+    virtual bool Valid() const override;
 
     // Returns the key at the current position.
     // REQUIRES: Valid()
-    const char* key() const override;
+    virtual const char* key() const override;
 
     // Advances to the next position.
     // REQUIRES: Valid()
-    void Next() override;
+    virtual void Next() override;
 
     // Advances to the previous position.
     // REQUIRES: Valid()
-    void Prev() override;
+    virtual void Prev() override;
 
     // Advance to the first entry with a key >= target
-    void Seek(const Slice& user_key, const char* memtable_key) override;
+    virtual void Seek(const Slice& user_key, const char* memtable_key) override;
 
     // Advance to the first entry with a key <= target
-    void SeekForPrev(const Slice& user_key, const char* memtable_key) override;
+    virtual void SeekForPrev(const Slice& user_key,
+                             const char* memtable_key) override;
 
     // Position at the first entry in collection.
     // Final state of iterator is Valid() iff collection is not empty.
-    void SeekToFirst() override;
+    virtual void SeekToFirst() override;
 
     // Position at the last entry in collection.
     // Final state of iterator is Valid() iff collection is not empty.
-    void SeekToLast() override;
+    virtual void SeekToLast() override;
   };
 
   // Return an iterator over the keys in this representation.
-  MemTableRep::Iterator* GetIterator(Arena* arena) override;
+  virtual MemTableRep::Iterator* GetIterator(Arena* arena) override;
 
  private:
   friend class Iterator;
@@ -297,5 +299,5 @@ MemTableRep* VectorRepFactory::CreateMemTableRep(
     const SliceTransform*, Logger* /*logger*/) {
   return new VectorRep(compare, allocator, count_);
 }
-}  // namespace ROCKSDB_NAMESPACE
+} // namespace rocksdb
 #endif  // ROCKSDB_LITE

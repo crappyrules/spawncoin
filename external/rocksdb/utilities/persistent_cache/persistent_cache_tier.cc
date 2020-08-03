@@ -5,13 +5,18 @@
 //
 #ifndef ROCKSDB_LITE
 
+#ifndef __STDC_FORMAT_MACROS
+#define __STDC_FORMAT_MACROS
+#endif
+
 #include "utilities/persistent_cache/persistent_cache_tier.h"
 
-#include <cinttypes>
-#include <sstream>
-#include <string>
+#include "inttypes.h"
 
-namespace ROCKSDB_NAMESPACE {
+#include <string>
+#include <sstream>
+
+namespace rocksdb {
 
 std::string PersistentCacheConfig::ToString() const {
   std::string ret;
@@ -158,6 +163,6 @@ bool PersistentTieredCache::IsCompressed() {
   return tiers_.front()->IsCompressed();
 }
 
-}  // namespace ROCKSDB_NAMESPACE
+}  // namespace rocksdb
 
 #endif

@@ -3,7 +3,8 @@
 //  COPYING file in the root directory) and Apache 2.0 License
 //  (found in the LICENSE.Apache file in the root directory).
 
-#pragma once
+#ifndef UTILITIES_MERGE_OPERATORS_BYTESXOR_H_
+#define UTILITIES_MERGE_OPERATORS_BYTESXOR_H_
 
 #include <algorithm>
 #include <memory>
@@ -14,7 +15,7 @@
 #include "util/coding.h"
 #include "utilities/merge_operators.h"
 
-namespace ROCKSDB_NAMESPACE {
+namespace rocksdb {
 
 // A 'model' merge operator that XORs two (same sized) array of bytes.
 // Implemented as an AssociativeMergeOperator for simplicity and example.
@@ -36,4 +37,6 @@ class BytesXOROperator : public AssociativeMergeOperator {
           std::string* new_value) const;
 };
 
-}  // namespace ROCKSDB_NAMESPACE
+}  // namespace rocksdb
+
+#endif  // UTILITIES_MERGE_OPERATORS_BYTESXOR_H_

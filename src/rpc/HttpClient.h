@@ -1,115 +1,94 @@
 // Copyright (c) 2012-2017, The CryptoNote developers, The Bytecoin developers
-// Copyright (c) 2018-2019, The TurtleCoin Developers
 //
-// Please see the included LICENSE file for more information.
+// This file is part of Bytecoin.
+//
+// Bytecoin is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Bytecoin is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with Bytecoin.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
-#include "serialization/SerializationTools.h"
-
-#include <http/HttpRequest.h>
-#include <http/HttpResponse.h>
 #include <memory>
-#include <system/TcpConnection.h>
-#include <system/TcpStream.h>
-#include <version.h>
 
-namespace CryptoNote
-{
-    class ConnectException : public std::runtime_error
-    {
-      public:
-        ConnectException(const std::string &whatArg);
-    };
+#include <HTTP/HttpRequest.h>
+#include <HTTP/HttpResponse.h>
+#include <System/TcpConnection.h>
+#include <System/TcpStream.h>
 
-    class HttpClient
-    {
-      public:
-        HttpClient(System::Dispatcher &dispatcher, const std::string &address, uint16_t port);
+#include "Serialization/SerializationTools.h"
 
-        ~HttpClient();
+namespace CryptoNote {
 
-        void request(const HttpRequest &req, HttpResponse &res);
+class ConnectException : public std::runtime_error  {
+public:
+  ConnectException(const std::string& whatArg);
+};
 
-        bool isConnected() const;
+class HttpClient {
+public:
 
-      private:
-        void connect();
+  HttpClient(System::Dispatcher& dispatcher, const std::string& address, uint16_t port);
+  ~HttpClient();
+  void request(const HttpRequest& req, HttpResponse& res);
+  
+  bool isConnected() const;
 
-        void disconnect();
+private:
+  void connect();
+  void disconnect();
 
-        const std::string m_address;
+  const std::string m_address;
+  const uint16_t m_port;
 
-        const uint16_t m_port;
+  bool m_connected = false;
+  System::Dispatcher& m_dispatcher;
+  System::TcpConnection m_connection;
+  std::unique_ptr<System::TcpStreambuf> m_streamBuf;
+  
+  /* Don't send two requests at once */
+  std::mutex m_mutex;
+};
 
-        bool m_connected = false;
+template <typename Request, typename Response>
+void invokeJsonCommand(HttpClient& client, const std::string& url, const Request& req, Response& res) {
+  HttpRequest hreq;
+  HttpResponse hres;
 
-        System::Dispatcher &m_dispatcher;
+  hreq.addHeader("Content-Type", "application/json");
+  hreq.setUrl(url);
+  hreq.setBody(storeToJson(req));
+  client.request(hreq, hres);
 
-        System::TcpConnection m_connection;
+  if (hres.getStatus() != HttpResponse::STATUS_200) {
+    throw std::runtime_error("HTTP status: " + std::to_string(hres.getStatus()));
+  }
 
-        std::unique_ptr<System::TcpStreambuf> m_streamBuf;
+  if (!loadFromJson(res, hres.getBody())) {
+    throw std::runtime_error("Failed to parse JSON response");
+  }
+}
 
-        /* Don't send two requests at once */
-        std::mutex m_mutex;
-    };
+template <typename Request, typename Response>
+void invokeBinaryCommand(HttpClient& client, const std::string& url, const Request& req, Response& res) {
+  HttpRequest hreq;
+  HttpResponse hres;
 
-    template<typename Request, typename Response>
-    void invokeJsonCommand(HttpClient &client, const std::string &url, const std::string &method, const Request &req, Response &res)
-    {
-        HttpRequest hreq;
-        HttpResponse hres;
+  hreq.setUrl(url);
+  hreq.setBody(storeToBinaryKeyValue(req));
+  client.request(hreq, hres);
 
-        hreq.addHeader("Content-Type", "application/json");
+  if (!loadFromBinaryKeyValue(res, hres.getBody())) {
+    throw std::runtime_error("Failed to parse binary response");
+  }
+}
 
-        std::stringstream userAgent;
-
-        userAgent << "NodeRpcProxy/" << PROJECT_VERSION_LONG;
-
-        hreq.addHeader("User-Agent", userAgent.str());
-
-        hreq.setUrl(url);
-
-        hreq.setMethod(method);
-
-        if (method == "POST")
-        {
-            hreq.setBody(storeToJson(req));
-        }
-
-        client.request(hreq, hres);
-
-        if (hres.getStatus() != HttpResponse::STATUS_200)
-        {
-            throw std::runtime_error("HTTP status: " + std::to_string(hres.getStatus()));
-        }
-
-        if (!loadFromJson(res, hres.getBody()))
-        {
-            throw std::runtime_error("Failed to parse JSON response");
-        }
-    }
-
-    template<typename Request, typename Response>
-    void invokeBinaryCommand(HttpClient &client, const std::string &url, const Request &req, Response &res)
-    {
-        HttpRequest hreq;
-        HttpResponse hres;
-
-        std::stringstream userAgent;
-
-        userAgent << "NodeRpcProxy/" << PROJECT_VERSION_LONG;
-
-        hreq.addHeader("User-Agent", userAgent.str());
-
-        hreq.setUrl(url);
-        hreq.setBody(storeToBinaryKeyValue(req));
-        client.request(hreq, hres);
-
-        if (!loadFromBinaryKeyValue(res, hres.getBody()))
-        {
-            throw std::runtime_error("Failed to parse binary response");
-        }
-    }
-
-} // namespace CryptoNote
+}

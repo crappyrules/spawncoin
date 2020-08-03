@@ -9,10 +9,10 @@
 #include "port/stack_trace.h"
 #include "rocksdb/iostats_context.h"
 #include "rocksdb/perf_context.h"
-#include "test_util/testharness.h"
-#include "test_util/testutil.h"
+#include "util/testharness.h"
+#include "util/testutil.h"
 
-namespace ROCKSDB_NAMESPACE {
+namespace rocksdb {
 
 class CleanableTest : public testing::Test {};
 
@@ -268,10 +268,10 @@ TEST_F(CleanableTest, PinnableSlice) {
   }
 }
 
-}  // namespace ROCKSDB_NAMESPACE
+}  // namespace rocksdb
 
 int main(int argc, char** argv) {
-  ROCKSDB_NAMESPACE::port::InstallStackTraceHandler();
+  rocksdb::port::InstallStackTraceHandler();
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }

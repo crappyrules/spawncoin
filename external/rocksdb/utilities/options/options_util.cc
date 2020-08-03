@@ -7,53 +7,28 @@
 
 #include "rocksdb/utilities/options_util.h"
 
-#include "env/composite_env_wrapper.h"
-#include "file/filename.h"
 #include "options/options_parser.h"
-#include "rocksdb/convenience.h"
 #include "rocksdb/options.h"
-#include "table/block_based/block_based_table_factory.h"
+#include "util/filename.h"
 
-namespace ROCKSDB_NAMESPACE {
+namespace rocksdb {
 Status LoadOptionsFromFile(const std::string& file_name, Env* env,
                            DBOptions* db_options,
                            std::vector<ColumnFamilyDescriptor>* cf_descs,
-                           bool ignore_unknown_options,
-                           std::shared_ptr<Cache>* cache) {
-  ConfigOptions config_options;
-  config_options.ignore_unknown_options = ignore_unknown_options;
-  config_options.input_strings_escaped = true;
-  config_options.env = env;
-
-  return LoadOptionsFromFile(config_options, file_name, db_options, cf_descs,
-                             cache);
-}
-
-Status LoadOptionsFromFile(const ConfigOptions& config_options,
-                           const std::string& file_name, DBOptions* db_options,
-                           std::vector<ColumnFamilyDescriptor>* cf_descs,
-                           std::shared_ptr<Cache>* cache) {
+                           bool ignore_unknown_options) {
   RocksDBOptionsParser parser;
-  LegacyFileSystemWrapper fs(config_options.env);
-  Status s = parser.Parse(config_options, file_name, &fs);
+  Status s = parser.Parse(file_name, env, ignore_unknown_options);
   if (!s.ok()) {
     return s;
   }
+
   *db_options = *parser.db_opt();
+
   const std::vector<std::string>& cf_names = *parser.cf_names();
   const std::vector<ColumnFamilyOptions>& cf_opts = *parser.cf_opts();
   cf_descs->clear();
   for (size_t i = 0; i < cf_opts.size(); ++i) {
     cf_descs->push_back({cf_names[i], cf_opts[i]});
-    if (cache != nullptr) {
-      TableFactory* tf = cf_opts[i].table_factory.get();
-      if (tf != nullptr && tf->GetOptions() != nullptr &&
-          tf->Name() == BlockBasedTableFactory().Name()) {
-        auto* loaded_bbt_opt =
-            reinterpret_cast<BlockBasedTableOptions*>(tf->GetOptions());
-        loaded_bbt_opt->block_cache = *cache;
-      }
-    }
   }
   return Status::OK();
 }
@@ -88,50 +63,23 @@ Status GetLatestOptionsFileName(const std::string& dbpath,
 Status LoadLatestOptions(const std::string& dbpath, Env* env,
                          DBOptions* db_options,
                          std::vector<ColumnFamilyDescriptor>* cf_descs,
-                         bool ignore_unknown_options,
-                         std::shared_ptr<Cache>* cache) {
-  ConfigOptions config_options;
-  config_options.ignore_unknown_options = ignore_unknown_options;
-  config_options.input_strings_escaped = true;
-  config_options.env = env;
-
-  return LoadLatestOptions(config_options, dbpath, db_options, cf_descs, cache);
-}
-
-Status LoadLatestOptions(const ConfigOptions& config_options,
-                         const std::string& dbpath, DBOptions* db_options,
-                         std::vector<ColumnFamilyDescriptor>* cf_descs,
-                         std::shared_ptr<Cache>* cache) {
+                         bool ignore_unknown_options) {
   std::string options_file_name;
-  Status s =
-      GetLatestOptionsFileName(dbpath, config_options.env, &options_file_name);
+  Status s = GetLatestOptionsFileName(dbpath, env, &options_file_name);
   if (!s.ok()) {
     return s;
   }
-  return LoadOptionsFromFile(config_options, dbpath + "/" + options_file_name,
-                             db_options, cf_descs, cache);
+
+  return LoadOptionsFromFile(dbpath + "/" + options_file_name, env, db_options,
+                             cf_descs, ignore_unknown_options);
 }
 
 Status CheckOptionsCompatibility(
     const std::string& dbpath, Env* env, const DBOptions& db_options,
     const std::vector<ColumnFamilyDescriptor>& cf_descs,
     bool ignore_unknown_options) {
-  ConfigOptions config_options;
-  config_options.sanity_level = ConfigOptions::kSanityLevelLooselyCompatible;
-  config_options.ignore_unknown_options = ignore_unknown_options;
-  config_options.input_strings_escaped = true;
-  config_options.env = env;
-  return CheckOptionsCompatibility(config_options, dbpath, db_options,
-                                   cf_descs);
-}
-
-Status CheckOptionsCompatibility(
-    const ConfigOptions& config_options, const std::string& dbpath,
-    const DBOptions& db_options,
-    const std::vector<ColumnFamilyDescriptor>& cf_descs) {
   std::string options_file_name;
-  Status s =
-      GetLatestOptionsFileName(dbpath, config_options.env, &options_file_name);
+  Status s = GetLatestOptionsFileName(dbpath, env, &options_file_name);
   if (!s.ok()) {
     return s;
   }
@@ -143,13 +91,12 @@ Status CheckOptionsCompatibility(
     cf_opts.push_back(cf_desc.options);
   }
 
-  LegacyFileSystemWrapper fs(config_options.env);
+  const OptionsSanityCheckLevel kDefaultLevel = kSanityLevelLooselyCompatible;
 
   return RocksDBOptionsParser::VerifyRocksDBOptionsFromFile(
-
-      config_options, db_options, cf_names, cf_opts,
-      dbpath + "/" + options_file_name, &fs);
+      db_options, cf_names, cf_opts, dbpath + "/" + options_file_name, env,
+      kDefaultLevel, ignore_unknown_options);
 }
 
-}  // namespace ROCKSDB_NAMESPACE
+}  // namespace rocksdb
 #endif  // !ROCKSDB_LITE

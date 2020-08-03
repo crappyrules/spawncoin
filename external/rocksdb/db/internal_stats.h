@@ -17,7 +17,7 @@
 
 class ColumnFamilyData;
 
-namespace ROCKSDB_NAMESPACE {
+namespace rocksdb {
 
 class DBImpl;
 class MemTableList;
@@ -71,7 +71,6 @@ enum class LevelStatType {
   READ_MBPS,
   WRITE_MBPS,
   COMP_SEC,
-  COMP_CPU_SEC,
   COMP_COUNT,
   AVG_SEC,
   KEY_IN,
@@ -109,15 +108,15 @@ class InternalStats {
   };
 
   enum InternalDBStatsType {
-    kIntStatsWalFileBytes,
-    kIntStatsWalFileSynced,
-    kIntStatsBytesWritten,
-    kIntStatsNumKeysWritten,
-    kIntStatsWriteDoneByOther,
-    kIntStatsWriteDoneBySelf,
-    kIntStatsWriteWithWal,
-    kIntStatsWriteStallMicros,
-    kIntStatsNumMax,
+    WAL_FILE_BYTES,
+    WAL_FILE_SYNCED,
+    BYTES_WRITTEN,
+    NUMBER_KEYS_WRITTEN,
+    WRITE_DONE_BY_OTHER,
+    WRITE_DONE_BY_SELF,
+    WRITE_WITH_WAL,
+    WRITE_STALL_MICROS,
+    INTERNAL_DB_STATS_ENUM_MAX,
   };
 
   InternalStats(int num_levels, Env* env, ColumnFamilyData* cfd)
@@ -125,7 +124,6 @@ class InternalStats {
         cf_stats_value_{},
         cf_stats_count_{},
         comp_stats_(num_levels),
-        comp_stats_by_pri_(Env::Priority::TOTAL),
         file_read_latency_(num_levels),
         bg_error_count_(0),
         number_levels_(num_levels),
@@ -137,7 +135,6 @@ class InternalStats {
   // compactions that produced data for the specified "level".
   struct CompactionStats {
     uint64_t micros;
-    uint64_t cpu_micros;
 
     // The number of bytes read from all non-output levels
     uint64_t bytes_read_non_output_levels;
@@ -175,7 +172,6 @@ class InternalStats {
 
     explicit CompactionStats()
         : micros(0),
-          cpu_micros(0),
           bytes_read_non_output_levels(0),
           bytes_read_output_level(0),
           bytes_written(0),
@@ -194,7 +190,6 @@ class InternalStats {
 
     explicit CompactionStats(CompactionReason reason, int c)
         : micros(0),
-          cpu_micros(0),
           bytes_read_non_output_levels(0),
           bytes_read_output_level(0),
           bytes_written(0),
@@ -219,14 +214,14 @@ class InternalStats {
 
     explicit CompactionStats(const CompactionStats& c)
         : micros(c.micros),
-          cpu_micros(c.cpu_micros),
           bytes_read_non_output_levels(c.bytes_read_non_output_levels),
           bytes_read_output_level(c.bytes_read_output_level),
           bytes_written(c.bytes_written),
           bytes_moved(c.bytes_moved),
           num_input_files_in_non_output_levels(
               c.num_input_files_in_non_output_levels),
-          num_input_files_in_output_level(c.num_input_files_in_output_level),
+          num_input_files_in_output_level(
+              c.num_input_files_in_output_level),
           num_output_files(c.num_output_files),
           num_input_records(c.num_input_records),
           num_dropped_records(c.num_dropped_records),
@@ -237,31 +232,8 @@ class InternalStats {
       }
     }
 
-    CompactionStats& operator=(const CompactionStats& c) {
-      micros = c.micros;
-      cpu_micros = c.cpu_micros;
-      bytes_read_non_output_levels = c.bytes_read_non_output_levels;
-      bytes_read_output_level = c.bytes_read_output_level;
-      bytes_written = c.bytes_written;
-      bytes_moved = c.bytes_moved;
-      num_input_files_in_non_output_levels =
-          c.num_input_files_in_non_output_levels;
-      num_input_files_in_output_level = c.num_input_files_in_output_level;
-      num_output_files = c.num_output_files;
-      num_input_records = c.num_input_records;
-      num_dropped_records = c.num_dropped_records;
-      count = c.count;
-
-      int num_of_reasons = static_cast<int>(CompactionReason::kNumOfReasons);
-      for (int i = 0; i < num_of_reasons; i++) {
-        counts[i] = c.counts[i];
-      }
-      return *this;
-    }
-
     void Clear() {
       this->micros = 0;
-      this->cpu_micros = 0;
       this->bytes_read_non_output_levels = 0;
       this->bytes_read_output_level = 0;
       this->bytes_written = 0;
@@ -280,7 +252,6 @@ class InternalStats {
 
     void Add(const CompactionStats& c) {
       this->micros += c.micros;
-      this->cpu_micros += c.cpu_micros;
       this->bytes_read_non_output_levels += c.bytes_read_non_output_levels;
       this->bytes_read_output_level += c.bytes_read_output_level;
       this->bytes_written += c.bytes_written;
@@ -301,7 +272,6 @@ class InternalStats {
 
     void Subtract(const CompactionStats& c) {
       this->micros -= c.micros;
-      this->cpu_micros -= c.cpu_micros;
       this->bytes_read_non_output_levels -= c.bytes_read_non_output_levels;
       this->bytes_read_output_level -= c.bytes_read_output_level;
       this->bytes_written -= c.bytes_written;
@@ -322,7 +292,7 @@ class InternalStats {
   };
 
   void Clear() {
-    for (int i = 0; i < kIntStatsNumMax; i++) {
+    for (int i = 0; i < INTERNAL_DB_STATS_ENUM_MAX; i++) {
       db_stats_[i].store(0);
     }
     for (int i = 0; i < INTERNAL_CF_STATS_ENUM_MAX; i++) {
@@ -341,10 +311,8 @@ class InternalStats {
     started_at_ = env_->NowMicros();
   }
 
-  void AddCompactionStats(int level, Env::Priority thread_pri,
-                          const CompactionStats& stats) {
+  void AddCompactionStats(int level, const CompactionStats& stats) {
     comp_stats_[level].Add(stats);
-    comp_stats_by_pri_[thread_pri].Add(stats);
   }
 
   void IncBytesMoved(int level, uint64_t amount) {
@@ -406,8 +374,6 @@ class InternalStats {
   void DumpCFMapStats(
       std::map<int, std::map<LevelStatType, double>>* level_stats,
       CompactionStats* compaction_stats_sum);
-  void DumpCFMapStatsByPriority(
-      std::map<int, std::map<LevelStatType, double>>* priorities_stats);
   void DumpCFMapStatsIOStalls(std::map<std::string, std::string>* cf_stats);
   void DumpCFStats(std::string* value);
   void DumpCFStatsNoFileHistogram(std::string* value);
@@ -416,13 +382,12 @@ class InternalStats {
   bool HandleBlockCacheStat(Cache** block_cache);
 
   // Per-DB stats
-  std::atomic<uint64_t> db_stats_[kIntStatsNumMax];
+  std::atomic<uint64_t> db_stats_[INTERNAL_DB_STATS_ENUM_MAX];
   // Per-ColumnFamily stats
   uint64_t cf_stats_value_[INTERNAL_CF_STATS_ENUM_MAX];
   uint64_t cf_stats_count_[INTERNAL_CF_STATS_ENUM_MAX];
   // Per-ColumnFamily/level compaction stats
   std::vector<CompactionStats> comp_stats_;
-  std::vector<CompactionStats> comp_stats_by_pri_;
   std::vector<HistogramImpl> file_read_latency_;
 
   // Used to compute per-interval statistics
@@ -553,8 +518,6 @@ class InternalStats {
   bool HandleEstimateNumKeys(uint64_t* value, DBImpl* db, Version* version);
   bool HandleNumSnapshots(uint64_t* value, DBImpl* db, Version* version);
   bool HandleOldestSnapshotTime(uint64_t* value, DBImpl* db, Version* version);
-  bool HandleOldestSnapshotSequence(uint64_t* value, DBImpl* db,
-                                    Version* version);
   bool HandleNumLiveVersions(uint64_t* value, DBImpl* db, Version* version);
   bool HandleCurrentSuperVersionNumber(uint64_t* value, DBImpl* db,
                                        Version* version);
@@ -570,8 +533,6 @@ class InternalStats {
   bool HandleEstimateLiveDataSize(uint64_t* value, DBImpl* db,
                                   Version* version);
   bool HandleMinLogNumberToKeep(uint64_t* value, DBImpl* db, Version* version);
-  bool HandleMinObsoleteSstNumberToKeep(uint64_t* value, DBImpl* db,
-                                        Version* version);
   bool HandleActualDelayedWriteRate(uint64_t* value, DBImpl* db,
                                     Version* version);
   bool HandleIsWriteStopped(uint64_t* value, DBImpl* db, Version* version);
@@ -617,22 +578,21 @@ class InternalStats {
   };
 
   enum InternalDBStatsType {
-    kIntStatsWalFileBytes,
-    kIntStatsWalFileSynced,
-    kIntStatsBytesWritten,
-    kIntStatsNumKeysWritten,
-    kIntStatsWriteDoneByOther,
-    kIntStatsWriteDoneBySelf,
-    kIntStatsWriteWithWal,
-    kIntStatsWriteStallMicros,
-    kIntStatsNumMax,
+    WAL_FILE_BYTES,
+    WAL_FILE_SYNCED,
+    BYTES_WRITTEN,
+    NUMBER_KEYS_WRITTEN,
+    WRITE_DONE_BY_OTHER,
+    WRITE_DONE_BY_SELF,
+    WRITE_WITH_WAL,
+    WRITE_STALL_MICROS,
+    INTERNAL_DB_STATS_ENUM_MAX,
   };
 
   InternalStats(int /*num_levels*/, Env* /*env*/, ColumnFamilyData* /*cfd*/) {}
 
   struct CompactionStats {
     uint64_t micros;
-    uint64_t cpu_micros;
     uint64_t bytes_read_non_output_levels;
     uint64_t bytes_read_output_level;
     uint64_t bytes_written;
@@ -655,8 +615,7 @@ class InternalStats {
     void Subtract(const CompactionStats& /*c*/) {}
   };
 
-  void AddCompactionStats(int /*level*/, Env::Priority /*thread_pri*/,
-                          const CompactionStats& /*stats*/) {}
+  void AddCompactionStats(int /*level*/, const CompactionStats& /*stats*/) {}
 
   void IncBytesMoved(int /*level*/, uint64_t /*amount*/) {}
 
@@ -694,4 +653,4 @@ class InternalStats {
 };
 #endif  // !ROCKSDB_LITE
 
-}  // namespace ROCKSDB_NAMESPACE
+}  // namespace rocksdb

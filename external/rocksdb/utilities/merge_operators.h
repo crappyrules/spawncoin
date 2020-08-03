@@ -11,7 +11,7 @@
 #include <memory>
 #include <string>
 
-namespace ROCKSDB_NAMESPACE {
+namespace rocksdb {
 
 class MergeOperators {
  public:
@@ -23,7 +23,6 @@ class MergeOperators {
   static std::shared_ptr<MergeOperator> CreateStringAppendTESTOperator();
   static std::shared_ptr<MergeOperator> CreateMaxOperator();
   static std::shared_ptr<MergeOperator> CreateBytesXOROperator();
-  static std::shared_ptr<MergeOperator> CreateSortOperator();
 
   // Will return a different merge operator depending on the string.
   // TODO: Hook the "name" up to the actual Name() of the MergeOperators?
@@ -43,8 +42,6 @@ class MergeOperators {
       return CreateMaxOperator();
     } else if (name == "bytesxor") {
       return CreateBytesXOROperator();
-    } else if (name == "sortlist") {
-      return CreateSortOperator();
     } else {
       // Empty or unknown, just return nullptr
       return nullptr;
@@ -52,4 +49,4 @@ class MergeOperators {
   }
 };
 
-}  // namespace ROCKSDB_NAMESPACE
+}  // namespace rocksdb

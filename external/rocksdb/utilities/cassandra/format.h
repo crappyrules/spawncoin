@@ -56,13 +56,13 @@
 
 #pragma once
 #include <chrono>
-#include <memory>
 #include <vector>
+#include <memory>
 #include "rocksdb/merge_operator.h"
 #include "rocksdb/slice.h"
-#include "test_util/testharness.h"
+#include "util/testharness.h"
 
-namespace ROCKSDB_NAMESPACE {
+namespace rocksdb {
 namespace cassandra {
 
 // Identify the type of the column.
@@ -194,4 +194,4 @@ private:
 };
 
 } // namepsace cassandrda
-}  // namespace ROCKSDB_NAMESPACE
+} // namespace rocksdb

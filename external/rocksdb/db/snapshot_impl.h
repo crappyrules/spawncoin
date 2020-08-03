@@ -12,7 +12,7 @@
 
 #include "rocksdb/db.h"
 
-namespace ROCKSDB_NAMESPACE {
+namespace rocksdb {
 
 class SnapshotList;
 
@@ -24,7 +24,7 @@ class SnapshotImpl : public Snapshot {
   // It indicates the smallest uncommitted data at the time the snapshot was
   // taken. This is currently used by WritePrepared transactions to limit the
   // scope of queries to IsInSnpashot.
-  SequenceNumber min_uncommitted_ = kMinUnCommittedSeq;
+  SequenceNumber min_uncommitted_ = 0;
 
   virtual SequenceNumber GetSequenceNumber() const override { return number_; }
 
@@ -86,38 +86,25 @@ class SnapshotList {
   }
 
   // retrieve all snapshot numbers up until max_seq. They are sorted in
-  // ascending order (with no duplicates).
+  // ascending order.
   std::vector<SequenceNumber> GetAll(
       SequenceNumber* oldest_write_conflict_snapshot = nullptr,
       const SequenceNumber& max_seq = kMaxSequenceNumber) const {
     std::vector<SequenceNumber> ret;
-    GetAll(&ret, oldest_write_conflict_snapshot, max_seq);
-    return ret;
-  }
-
-  void GetAll(std::vector<SequenceNumber>* snap_vector,
-              SequenceNumber* oldest_write_conflict_snapshot = nullptr,
-              const SequenceNumber& max_seq = kMaxSequenceNumber) const {
-    std::vector<SequenceNumber>& ret = *snap_vector;
-    // So far we have no use case that would pass a non-empty vector
-    assert(ret.size() == 0);
 
     if (oldest_write_conflict_snapshot != nullptr) {
       *oldest_write_conflict_snapshot = kMaxSequenceNumber;
     }
 
     if (empty()) {
-      return;
+      return ret;
     }
     const SnapshotImpl* s = &list_;
     while (s->next_ != &list_) {
       if (s->next_->number_ > max_seq) {
         break;
       }
-      // Avoid duplicates
-      if (ret.empty() || ret.back() != s->next_->number_) {
-        ret.push_back(s->next_->number_);
-      }
+      ret.push_back(s->next_->number_);
 
       if (oldest_write_conflict_snapshot != nullptr &&
           *oldest_write_conflict_snapshot == kMaxSequenceNumber &&
@@ -129,7 +116,7 @@ class SnapshotList {
 
       s = s->next_;
     }
-    return;
+    return ret;
   }
 
   // get the sequence number of the most recent snapshot
@@ -148,14 +135,6 @@ class SnapshotList {
     }
   }
 
-  int64_t GetOldestSnapshotSequence() const {
-    if (empty()) {
-      return 0;
-    } else {
-      return oldest()->GetSequenceNumber();
-    }
-  }
-
   uint64_t count() const { return count_; }
 
  private:
@@ -164,4 +143,4 @@ class SnapshotList {
   uint64_t count_;
 };
 
-}  // namespace ROCKSDB_NAMESPACE
+}  // namespace rocksdb

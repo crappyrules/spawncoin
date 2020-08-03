@@ -8,14 +8,14 @@
 #include <string>
 #include <vector>
 #include "port/port.h"
-#include "test_util/testharness.h"
+#include "util/testharness.h"
 
-namespace ROCKSDB_NAMESPACE {
+namespace rocksdb {
 
 class LRUCacheTest : public testing::Test {
  public:
   LRUCacheTest() {}
-  ~LRUCacheTest() override { DeleteCache(); }
+  ~LRUCacheTest() { DeleteCache(); }
 
   void DeleteCache() {
     if (cache_ != nullptr) {
@@ -25,14 +25,12 @@ class LRUCacheTest : public testing::Test {
     }
   }
 
-  void NewCache(size_t capacity, double high_pri_pool_ratio = 0.0,
-                bool use_adaptive_mutex = kDefaultToAdaptiveMutex) {
+  void NewCache(size_t capacity, double high_pri_pool_ratio = 0.0) {
     DeleteCache();
     cache_ = reinterpret_cast<LRUCacheShard*>(
         port::cacheline_aligned_alloc(sizeof(LRUCacheShard)));
     new (cache_) LRUCacheShard(capacity, false /*strict_capcity_limit*/,
-                               high_pri_pool_ratio, use_adaptive_mutex,
-                               kDontChargeCacheMetadata);
+                               high_pri_pool_ratio);
   }
 
   void Insert(const std::string& key,
@@ -190,7 +188,7 @@ TEST_F(LRUCacheTest, EntriesWithPriority) {
   ValidateLRUList({"e", "f", "g", "Z", "d"}, 2);
 }
 
-}  // namespace ROCKSDB_NAMESPACE
+}  // namespace rocksdb
 
 int main(int argc, char** argv) {
   ::testing::InitGoogleTest(&argc, argv);

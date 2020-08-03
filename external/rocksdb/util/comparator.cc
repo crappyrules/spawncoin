@@ -7,31 +7,35 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file. See the AUTHORS file for names of contributors.
 
-#include "rocksdb/comparator.h"
-#include <stdint.h>
 #include <algorithm>
 #include <memory>
-#include "logging/logging.h"
-#include "port/port.h"
+#include <stdint.h>
+#include "rocksdb/comparator.h"
 #include "rocksdb/slice.h"
+#include "port/port.h"
+#include "util/logging.h"
 
-namespace ROCKSDB_NAMESPACE {
+namespace rocksdb {
 
 namespace {
 class BytewiseComparatorImpl : public Comparator {
  public:
   BytewiseComparatorImpl() { }
 
-  const char* Name() const override { return "leveldb.BytewiseComparator"; }
+  virtual const char* Name() const override {
+    return "leveldb.BytewiseComparator";
+  }
 
-  int Compare(const Slice& a, const Slice& b) const override {
+  virtual int Compare(const Slice& a, const Slice& b) const override {
     return a.compare(b);
   }
 
-  bool Equal(const Slice& a, const Slice& b) const override { return a == b; }
+  virtual bool Equal(const Slice& a, const Slice& b) const override {
+    return a == b;
+  }
 
-  void FindShortestSeparator(std::string* start,
-                             const Slice& limit) const override {
+  virtual void FindShortestSeparator(std::string* start,
+                                     const Slice& limit) const override {
     // Find length of common prefix
     size_t min_length = std::min(start->size(), limit.size());
     size_t diff_index = 0;
@@ -81,7 +85,7 @@ class BytewiseComparatorImpl : public Comparator {
     }
   }
 
-  void FindShortSuccessor(std::string* key) const override {
+  virtual void FindShortSuccessor(std::string* key) const override {
     // Find first character that can be incremented
     size_t n = key->size();
     for (size_t i = 0; i < n; i++) {
@@ -95,8 +99,8 @@ class BytewiseComparatorImpl : public Comparator {
     // *key is a run of 0xffs.  Leave it alone.
   }
 
-  bool IsSameLengthImmediateSuccessor(const Slice& s,
-                                      const Slice& t) const override {
+  virtual bool IsSameLengthImmediateSuccessor(const Slice& s,
+                                              const Slice& t) const override {
     if (s.size() != t.size() || s.size() == 0) {
       return false;
     }
@@ -120,27 +124,17 @@ class BytewiseComparatorImpl : public Comparator {
       return false;
     }
   }
-
-  bool CanKeysWithDifferentByteContentsBeEqual() const override {
-    return false;
-  }
-
-  using Comparator::CompareWithoutTimestamp;
-  int CompareWithoutTimestamp(const Slice& a, bool /*a_has_ts*/, const Slice& b,
-                              bool /*b_has_ts*/) const override {
-    return a.compare(b);
-  }
 };
 
 class ReverseBytewiseComparatorImpl : public BytewiseComparatorImpl {
  public:
   ReverseBytewiseComparatorImpl() { }
 
-  const char* Name() const override {
+  virtual const char* Name() const override {
     return "rocksdb.ReverseBytewiseComparator";
   }
 
-  int Compare(const Slice& a, const Slice& b) const override {
+  virtual int Compare(const Slice& a, const Slice& b) const override {
     return -a.compare(b);
   }
 
@@ -194,16 +188,6 @@ class ReverseBytewiseComparatorImpl : public BytewiseComparatorImpl {
   void FindShortSuccessor(std::string* /*key*/) const override {
     // Don't do anything for simplicity.
   }
-
-  bool CanKeysWithDifferentByteContentsBeEqual() const override {
-    return false;
-  }
-
-  using Comparator::CompareWithoutTimestamp;
-  int CompareWithoutTimestamp(const Slice& a, bool /*a_has_ts*/, const Slice& b,
-                              bool /*b_has_ts*/) const override {
-    return -a.compare(b);
-  }
 };
 }// namespace
 
@@ -217,4 +201,4 @@ const Comparator* ReverseBytewiseComparator() {
   return &rbytewise;
 }
 
-}  // namespace ROCKSDB_NAMESPACE
+}  // namespace rocksdb

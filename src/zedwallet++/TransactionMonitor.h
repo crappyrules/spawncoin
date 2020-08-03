@@ -1,33 +1,33 @@
-// Copyright (c) 2018-2019, The TurtleCoin Developers
-//
+// Copyright (c) 2018, The TurtleCoin Developers
+// 
 // Please see the included LICENSE file for more information.
 
 #pragma once
 
-#include <utilities/ThreadSafeQueue.h>
-#include <walletbackend/WalletBackend.h>
+#include <WalletBackend/WalletBackend.h>
+#include <WalletBackend/ThreadSafeQueue.h>
 
 class TransactionMonitor
 {
-  public:
-    TransactionMonitor(const std::shared_ptr<WalletBackend> walletBackend):
-        m_walletBackend(walletBackend),
-        m_shouldStop(false)
-    {
-    }
+    public:
+        TransactionMonitor(
+            const std::shared_ptr<WalletBackend> walletBackend) :
+            m_walletBackend(walletBackend),
+            m_shouldStop(false) {}
 
-    void start();
+        void start();
 
-    void stop();
+        void stop();
 
-    std::shared_ptr<std::mutex> getMutex() const;
+        std::shared_ptr<std::mutex> getMutex() const;
 
-  private:
-    std::atomic<bool> m_shouldStop;
+    private:
 
-    std::shared_ptr<WalletBackend> m_walletBackend;
+        std::atomic<bool> m_shouldStop;
 
-    ThreadSafeQueue<WalletTypes::Transaction> m_queuedTransactions;
+        std::shared_ptr<WalletBackend> m_walletBackend;
 
-    std::shared_ptr<std::mutex> m_mutex = std::make_shared<std::mutex>();
+        ThreadSafeQueue<WalletTypes::Transaction> m_queuedTransactions;
+
+        std::shared_ptr<std::mutex> m_mutex = std::make_shared<std::mutex>();
 };

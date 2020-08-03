@@ -6,9 +6,9 @@
 #pragma once
 #ifndef ROCKSDB_LITE
 
+#include <chrono>
 #include <string>
 #include <unordered_map>
-#include <memory>
 #include <utility>
 #include <vector>
 
@@ -19,7 +19,7 @@
 #include "util/thread_local.h"
 #include "utilities/transactions/pessimistic_transaction.h"
 
-namespace ROCKSDB_NAMESPACE {
+namespace rocksdb {
 
 class ColumnFamilyHandle;
 struct LockInfo;
@@ -44,8 +44,8 @@ struct DeadlockInfoBuffer {
 struct TrackedTrxInfo {
   autovector<TransactionID> m_neighbors;
   uint32_t m_cf_id;
-  bool m_exclusive;
   std::string m_waiting_key;
+  bool m_exclusive;
 };
 
 class Slice;
@@ -56,9 +56,6 @@ class TransactionLockMgr {
   TransactionLockMgr(TransactionDB* txn_db, size_t default_num_stripes,
                      int64_t max_num_locks, uint32_t max_num_deadlocks,
                      std::shared_ptr<TransactionDBMutexFactory> factory);
-  // No copying allowed
-  TransactionLockMgr(const TransactionLockMgr&) = delete;
-  void operator=(const TransactionLockMgr&) = delete;
 
   ~TransactionLockMgr();
 
@@ -133,11 +130,11 @@ class TransactionLockMgr {
   Status AcquireWithTimeout(PessimisticTransaction* txn, LockMap* lock_map,
                             LockMapStripe* stripe, uint32_t column_family_id,
                             const std::string& key, Env* env, int64_t timeout,
-                            LockInfo&& lock_info);
+                            const LockInfo& lock_info);
 
   Status AcquireLocked(LockMap* lock_map, LockMapStripe* stripe,
                        const std::string& key, Env* env,
-                       LockInfo&& lock_info, uint64_t* wait_time,
+                       const LockInfo& lock_info, uint64_t* wait_time,
                        autovector<TransactionID>* txn_ids);
 
   void UnLockKey(const PessimisticTransaction* txn, const std::string& key,
@@ -151,7 +148,11 @@ class TransactionLockMgr {
                         const autovector<TransactionID>& wait_ids);
   void DecrementWaitersImpl(const PessimisticTransaction* txn,
                             const autovector<TransactionID>& wait_ids);
+
+  // No copying allowed
+  TransactionLockMgr(const TransactionLockMgr&);
+  void operator=(const TransactionLockMgr&);
 };
 
-}  // namespace ROCKSDB_NAMESPACE
+}  //  namespace rocksdb
 #endif  // ROCKSDB_LITE

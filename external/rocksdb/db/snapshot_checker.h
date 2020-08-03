@@ -6,32 +6,23 @@
 #pragma once
 #include "rocksdb/types.h"
 
-namespace ROCKSDB_NAMESPACE {
+namespace rocksdb {
 
-enum class SnapshotCheckerResult : int {
-  kInSnapshot = 0,
-  kNotInSnapshot = 1,
-  // In case snapshot is released and the checker has no clue whether
-  // the given sequence is visible to the snapshot.
-  kSnapshotReleased = 2,
-};
-
-// Callback class that control GC of duplicate keys in flush/compaction.
+// Callback class that control GC of duplicate keys in flush/compaction
 class SnapshotChecker {
  public:
   virtual ~SnapshotChecker() {}
-  virtual SnapshotCheckerResult CheckInSnapshot(
-      SequenceNumber sequence, SequenceNumber snapshot_sequence) const = 0;
+  virtual bool IsInSnapshot(SequenceNumber sequence,
+                            SequenceNumber snapshot_sequence) const = 0;
 };
 
 class DisableGCSnapshotChecker : public SnapshotChecker {
  public:
   virtual ~DisableGCSnapshotChecker() {}
-  virtual SnapshotCheckerResult CheckInSnapshot(
-      SequenceNumber /*sequence*/,
-      SequenceNumber /*snapshot_sequence*/) const override {
-    // By returning kNotInSnapshot, we prevent all the values from being GCed
-    return SnapshotCheckerResult::kNotInSnapshot;
+  virtual bool IsInSnapshot(SequenceNumber /*sequence*/,
+                            SequenceNumber /*snapshot_sequence*/) const override {
+    // By returning false, we prevent all the values from being GCed
+    return false;
   }
   static DisableGCSnapshotChecker* Instance() { return &instance_; }
 
@@ -49,8 +40,8 @@ class WritePreparedSnapshotChecker : public SnapshotChecker {
   explicit WritePreparedSnapshotChecker(WritePreparedTxnDB* txn_db);
   virtual ~WritePreparedSnapshotChecker() {}
 
-  virtual SnapshotCheckerResult CheckInSnapshot(
-      SequenceNumber sequence, SequenceNumber snapshot_sequence) const override;
+  virtual bool IsInSnapshot(SequenceNumber sequence,
+                            SequenceNumber snapshot_sequence) const override;
 
  private:
 #ifndef ROCKSDB_LITE
@@ -58,4 +49,4 @@ class WritePreparedSnapshotChecker : public SnapshotChecker {
 #endif  // !ROCKSDB_LITE
 };
 
-}  // namespace ROCKSDB_NAMESPACE
+}  // namespace rocksdb

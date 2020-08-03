@@ -4,20 +4,22 @@
 //  (found in the LICENSE.Apache file in the root directory).
 
 #ifndef ROCKSDB_LITE
+#ifndef __STDC_FORMAT_MACROS
+#define __STDC_FORMAT_MACROS
+#endif
 
-#include "rocksdb/utilities/options_util.h"
+#include <inttypes.h>
 
 #include <cctype>
-#include <cinttypes>
 #include <unordered_map>
 
 #include "options/options_parser.h"
-#include "rocksdb/convenience.h"
 #include "rocksdb/db.h"
 #include "rocksdb/table.h"
-#include "test_util/testharness.h"
-#include "test_util/testutil.h"
+#include "rocksdb/utilities/options_util.h"
 #include "util/random.h"
+#include "util/testharness.h"
+#include "util/testutil.h"
 
 #ifndef GFLAGS
 bool FLAGS_enable_print = false;
@@ -27,18 +29,16 @@ using GFLAGS_NAMESPACE::ParseCommandLineFlags;
 DEFINE_bool(enable_print, false, "Print options generated to console.");
 #endif  // GFLAGS
 
-namespace ROCKSDB_NAMESPACE {
+namespace rocksdb {
 class OptionsUtilTest : public testing::Test {
  public:
   OptionsUtilTest() : rnd_(0xFB) {
     env_.reset(new test::StringEnv(Env::Default()));
-    fs_.reset(new LegacyFileSystemWrapper(env_.get()));
     dbname_ = test::PerThreadDBPath("options_util_test");
   }
 
  protected:
   std::unique_ptr<test::StringEnv> env_;
-  std::unique_ptr<LegacyFileSystemWrapper> fs_;
   std::string dbname_;
   Random rnd_;
 };
@@ -58,36 +58,33 @@ TEST_F(OptionsUtilTest, SaveAndLoad) {
     cf_names.push_back(i == 0 ? kDefaultColumnFamilyName
                               : test::RandomName(&rnd_, 10));
     cf_opts.emplace_back();
-    test::RandomInitCFOptions(&cf_opts.back(), db_opt, &rnd_);
+    test::RandomInitCFOptions(&cf_opts.back(), &rnd_);
   }
 
   const std::string kFileName = "OPTIONS-123456";
-  PersistRocksDBOptions(db_opt, cf_names, cf_opts, kFileName, fs_.get());
+  PersistRocksDBOptions(db_opt, cf_names, cf_opts, kFileName, env_.get());
 
   DBOptions loaded_db_opt;
   std::vector<ColumnFamilyDescriptor> loaded_cf_descs;
   ASSERT_OK(LoadOptionsFromFile(kFileName, env_.get(), &loaded_db_opt,
                                 &loaded_cf_descs));
-  ConfigOptions exact;
-  exact.sanity_level = ConfigOptions::kSanityLevelExactMatch;
-  ASSERT_OK(
-      RocksDBOptionsParser::VerifyDBOptions(exact, db_opt, loaded_db_opt));
+
+  ASSERT_OK(RocksDBOptionsParser::VerifyDBOptions(db_opt, loaded_db_opt));
   test::RandomInitDBOptions(&db_opt, &rnd_);
-  ASSERT_NOK(
-      RocksDBOptionsParser::VerifyDBOptions(exact, db_opt, loaded_db_opt));
+  ASSERT_NOK(RocksDBOptionsParser::VerifyDBOptions(db_opt, loaded_db_opt));
 
   for (size_t i = 0; i < kCFCount; ++i) {
     ASSERT_EQ(cf_names[i], loaded_cf_descs[i].name);
     ASSERT_OK(RocksDBOptionsParser::VerifyCFOptions(
-        exact, cf_opts[i], loaded_cf_descs[i].options));
+        cf_opts[i], loaded_cf_descs[i].options));
     if (IsBlockBasedTableFactory(cf_opts[i].table_factory.get())) {
       ASSERT_OK(RocksDBOptionsParser::VerifyTableFactory(
-          exact, cf_opts[i].table_factory.get(),
+          cf_opts[i].table_factory.get(),
           loaded_cf_descs[i].options.table_factory.get()));
     }
-    test::RandomInitCFOptions(&cf_opts[i], db_opt, &rnd_);
+    test::RandomInitCFOptions(&cf_opts[i], &rnd_);
     ASSERT_NOK(RocksDBOptionsParser::VerifyCFOptions(
-        exact, cf_opts[i], loaded_cf_descs[i].options));
+        cf_opts[i], loaded_cf_descs[i].options));
   }
 
   for (size_t i = 0; i < kCFCount; ++i) {
@@ -97,104 +94,39 @@ TEST_F(OptionsUtilTest, SaveAndLoad) {
   }
 }
 
-TEST_F(OptionsUtilTest, SaveAndLoadWithCacheCheck) {
-  // creating db
-  DBOptions db_opt;
-  db_opt.create_if_missing = true;
-  // initialize BlockBasedTableOptions
-  std::shared_ptr<Cache> cache = NewLRUCache(1 * 1024);
-  BlockBasedTableOptions bbt_opts;
-  bbt_opts.block_size = 32 * 1024;
-  // saving cf options
-  std::vector<ColumnFamilyOptions> cf_opts;
-  ColumnFamilyOptions default_column_family_opt = ColumnFamilyOptions();
-  default_column_family_opt.table_factory.reset(
-      NewBlockBasedTableFactory(bbt_opts));
-  cf_opts.push_back(default_column_family_opt);
-
-  ColumnFamilyOptions cf_opt_sample = ColumnFamilyOptions();
-  cf_opt_sample.table_factory.reset(NewBlockBasedTableFactory(bbt_opts));
-  cf_opts.push_back(cf_opt_sample);
-
-  ColumnFamilyOptions cf_opt_plain_table_opt = ColumnFamilyOptions();
-  cf_opt_plain_table_opt.table_factory.reset(NewPlainTableFactory());
-  cf_opts.push_back(cf_opt_plain_table_opt);
-
-  std::vector<std::string> cf_names;
-  cf_names.push_back(kDefaultColumnFamilyName);
-  cf_names.push_back("cf_sample");
-  cf_names.push_back("cf_plain_table_sample");
-  // Saving DB in file
-  const std::string kFileName = "OPTIONS-LOAD_CACHE_123456";
-  PersistRocksDBOptions(db_opt, cf_names, cf_opts, kFileName, fs_.get());
-  DBOptions loaded_db_opt;
-  std::vector<ColumnFamilyDescriptor> loaded_cf_descs;
-
-  ConfigOptions config_options;
-  config_options.ignore_unknown_options = false;
-  config_options.input_strings_escaped = true;
-  config_options.env = env_.get();
-  ASSERT_OK(LoadOptionsFromFile(config_options, kFileName, &loaded_db_opt,
-                                &loaded_cf_descs, &cache));
-  for (size_t i = 0; i < loaded_cf_descs.size(); i++) {
-    if (IsBlockBasedTableFactory(cf_opts[i].table_factory.get())) {
-      auto* loaded_bbt_opt = reinterpret_cast<BlockBasedTableOptions*>(
-          loaded_cf_descs[i].options.table_factory->GetOptions());
-      // Expect the same cache will be loaded
-      if (loaded_bbt_opt != nullptr) {
-        ASSERT_EQ(loaded_bbt_opt->block_cache.get(), cache.get());
-      }
-    }
-  }
-
-  // Test the old interface
-  ASSERT_OK(LoadOptionsFromFile(kFileName, env_.get(), &loaded_db_opt,
-                                &loaded_cf_descs, false, &cache));
-  for (size_t i = 0; i < loaded_cf_descs.size(); i++) {
-    if (IsBlockBasedTableFactory(cf_opts[i].table_factory.get())) {
-      auto* loaded_bbt_opt = reinterpret_cast<BlockBasedTableOptions*>(
-          loaded_cf_descs[i].options.table_factory->GetOptions());
-      // Expect the same cache will be loaded
-      if (loaded_bbt_opt != nullptr) {
-        ASSERT_EQ(loaded_bbt_opt->block_cache.get(), cache.get());
-      }
-    }
-  }
-}
-
 namespace {
 class DummyTableFactory : public TableFactory {
  public:
   DummyTableFactory() {}
-  ~DummyTableFactory() override {}
+  virtual ~DummyTableFactory() {}
 
-  const char* Name() const override { return "DummyTableFactory"; }
+  virtual const char* Name() const override { return "DummyTableFactory"; }
 
-  Status NewTableReader(
+  virtual Status NewTableReader(
       const TableReaderOptions& /*table_reader_options*/,
-      std::unique_ptr<RandomAccessFileReader>&& /*file*/,
-      uint64_t /*file_size*/, std::unique_ptr<TableReader>* /*table_reader*/,
+      unique_ptr<RandomAccessFileReader>&& /*file*/, uint64_t /*file_size*/,
+      unique_ptr<TableReader>* /*table_reader*/,
       bool /*prefetch_index_and_filter_in_cache*/) const override {
     return Status::NotSupported();
   }
 
-  TableBuilder* NewTableBuilder(
+  virtual TableBuilder* NewTableBuilder(
       const TableBuilderOptions& /*table_builder_options*/,
       uint32_t /*column_family_id*/,
       WritableFileWriter* /*file*/) const override {
     return nullptr;
   }
 
-  Status SanitizeOptions(
+  virtual Status SanitizeOptions(
       const DBOptions& /*db_opts*/,
       const ColumnFamilyOptions& /*cf_opts*/) const override {
     return Status::NotSupported();
   }
 
-  std::string GetPrintableTableOptions() const override { return ""; }
+  virtual std::string GetPrintableTableOptions() const override { return ""; }
 
-  Status GetOptionString(const ConfigOptions& /*opts*/,
-                         std::string* /*opt_string*/) const override {
+  Status GetOptionString(std::string* /*opt_string*/,
+                         const std::string& /*delimiter*/) const override {
     return Status::OK();
   }
 };
@@ -202,39 +134,39 @@ class DummyTableFactory : public TableFactory {
 class DummyMergeOperator : public MergeOperator {
  public:
   DummyMergeOperator() {}
-  ~DummyMergeOperator() override {}
+  virtual ~DummyMergeOperator() {}
 
-  bool FullMergeV2(const MergeOperationInput& /*merge_in*/,
-                   MergeOperationOutput* /*merge_out*/) const override {
+  virtual bool FullMergeV2(const MergeOperationInput& /*merge_in*/,
+                           MergeOperationOutput* /*merge_out*/) const override {
     return false;
   }
 
-  bool PartialMergeMulti(const Slice& /*key*/,
-                         const std::deque<Slice>& /*operand_list*/,
-                         std::string* /*new_value*/,
-                         Logger* /*logger*/) const override {
+  virtual bool PartialMergeMulti(const Slice& /*key*/,
+                                 const std::deque<Slice>& /*operand_list*/,
+                                 std::string* /*new_value*/,
+                                 Logger* /*logger*/) const override {
     return false;
   }
 
-  const char* Name() const override { return "DummyMergeOperator"; }
+  virtual const char* Name() const override { return "DummyMergeOperator"; }
 };
 
 class DummySliceTransform : public SliceTransform {
  public:
   DummySliceTransform() {}
-  ~DummySliceTransform() override {}
+  virtual ~DummySliceTransform() {}
 
   // Return the name of this transformation.
-  const char* Name() const override { return "DummySliceTransform"; }
+  virtual const char* Name() const { return "DummySliceTransform"; }
 
   // transform a src in domain to a dst in the range
-  Slice Transform(const Slice& src) const override { return src; }
+  virtual Slice Transform(const Slice& src) const { return src; }
 
   // determine whether this is a valid src upon the function applies
-  bool InDomain(const Slice& /*src*/) const override { return false; }
+  virtual bool InDomain(const Slice& /*src*/) const { return false; }
 
   // determine whether dst=Transform(src) for some src
-  bool InRange(const Slice& /*dst*/) const override { return false; }
+  virtual bool InRange(const Slice& /*dst*/) const { return false; }
 };
 
 }  // namespace
@@ -271,13 +203,9 @@ TEST_F(OptionsUtilTest, SanityCheck) {
   }
   delete db;
 
-  ConfigOptions config_options;
-  config_options.ignore_unknown_options = false;
-  config_options.input_strings_escaped = true;
-  config_options.sanity_level = ConfigOptions::kSanityLevelLooselyCompatible;
   // perform sanity check
   ASSERT_OK(
-      CheckOptionsCompatibility(config_options, dbname_, db_opt, cf_descs));
+      CheckOptionsCompatibility(dbname_, Env::Default(), db_opt, cf_descs));
 
   ASSERT_GE(kCFCount, 5);
   // merge operator
@@ -288,15 +216,15 @@ TEST_F(OptionsUtilTest, SanityCheck) {
     ASSERT_NE(merge_op.get(), nullptr);
     cf_descs[0].options.merge_operator.reset();
     ASSERT_NOK(
-        CheckOptionsCompatibility(config_options, dbname_, db_opt, cf_descs));
+        CheckOptionsCompatibility(dbname_, Env::Default(), db_opt, cf_descs));
 
     cf_descs[0].options.merge_operator.reset(new DummyMergeOperator());
     ASSERT_NOK(
-        CheckOptionsCompatibility(config_options, dbname_, db_opt, cf_descs));
+        CheckOptionsCompatibility(dbname_, Env::Default(), db_opt, cf_descs));
 
     cf_descs[0].options.merge_operator = merge_op;
     ASSERT_OK(
-        CheckOptionsCompatibility(config_options, dbname_, db_opt, cf_descs));
+        CheckOptionsCompatibility(dbname_, Env::Default(), db_opt, cf_descs));
   }
 
   // prefix extractor
@@ -308,15 +236,15 @@ TEST_F(OptionsUtilTest, SanityCheck) {
     ASSERT_NE(prefix_extractor, nullptr);
     cf_descs[1].options.prefix_extractor.reset();
     ASSERT_OK(
-        CheckOptionsCompatibility(config_options, dbname_, db_opt, cf_descs));
+        CheckOptionsCompatibility(dbname_, Env::Default(), db_opt, cf_descs));
 
     cf_descs[1].options.prefix_extractor.reset(new DummySliceTransform());
     ASSERT_OK(
-        CheckOptionsCompatibility(config_options, dbname_, db_opt, cf_descs));
+        CheckOptionsCompatibility(dbname_, Env::Default(), db_opt, cf_descs));
 
     cf_descs[1].options.prefix_extractor = prefix_extractor;
     ASSERT_OK(
-        CheckOptionsCompatibility(config_options, dbname_, db_opt, cf_descs));
+        CheckOptionsCompatibility(dbname_, Env::Default(), db_opt, cf_descs));
   }
 
   // prefix extractor nullptr case
@@ -328,16 +256,16 @@ TEST_F(OptionsUtilTest, SanityCheck) {
     ASSERT_EQ(prefix_extractor, nullptr);
     cf_descs[0].options.prefix_extractor.reset();
     ASSERT_OK(
-        CheckOptionsCompatibility(config_options, dbname_, db_opt, cf_descs));
+        CheckOptionsCompatibility(dbname_, Env::Default(), db_opt, cf_descs));
 
     // It's okay to change prefix_extractor from nullptr to non-nullptr
     cf_descs[0].options.prefix_extractor.reset(new DummySliceTransform());
     ASSERT_OK(
-        CheckOptionsCompatibility(config_options, dbname_, db_opt, cf_descs));
+        CheckOptionsCompatibility(dbname_, Env::Default(), db_opt, cf_descs));
 
     cf_descs[0].options.prefix_extractor = prefix_extractor;
     ASSERT_OK(
-        CheckOptionsCompatibility(config_options, dbname_, db_opt, cf_descs));
+        CheckOptionsCompatibility(dbname_, Env::Default(), db_opt, cf_descs));
   }
 
   // comparator
@@ -347,11 +275,11 @@ TEST_F(OptionsUtilTest, SanityCheck) {
     auto* prev_comparator = cf_descs[2].options.comparator;
     cf_descs[2].options.comparator = &comparator;
     ASSERT_NOK(
-        CheckOptionsCompatibility(config_options, dbname_, db_opt, cf_descs));
+        CheckOptionsCompatibility(dbname_, Env::Default(), db_opt, cf_descs));
 
     cf_descs[2].options.comparator = prev_comparator;
     ASSERT_OK(
-        CheckOptionsCompatibility(config_options, dbname_, db_opt, cf_descs));
+        CheckOptionsCompatibility(dbname_, Env::Default(), db_opt, cf_descs));
   }
 
   // table factory
@@ -362,15 +290,15 @@ TEST_F(OptionsUtilTest, SanityCheck) {
     ASSERT_NE(table_factory, nullptr);
     cf_descs[3].options.table_factory.reset(new DummyTableFactory());
     ASSERT_NOK(
-        CheckOptionsCompatibility(config_options, dbname_, db_opt, cf_descs));
+        CheckOptionsCompatibility(dbname_, Env::Default(), db_opt, cf_descs));
 
     cf_descs[3].options.table_factory = table_factory;
     ASSERT_OK(
-        CheckOptionsCompatibility(config_options, dbname_, db_opt, cf_descs));
+        CheckOptionsCompatibility(dbname_, Env::Default(), db_opt, cf_descs));
   }
 }
 
-}  // namespace ROCKSDB_NAMESPACE
+}  // namespace rocksdb
 
 int main(int argc, char** argv) {
   ::testing::InitGoogleTest(&argc, argv);

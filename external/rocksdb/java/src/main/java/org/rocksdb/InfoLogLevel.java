@@ -1,4 +1,3 @@
-// Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
 package org.rocksdb;
 
 /**
@@ -39,7 +38,7 @@ public enum InfoLogLevel {
    */
   public static InfoLogLevel getInfoLogLevel(final byte value) {
     for (final InfoLogLevel infoLogLevel : InfoLogLevel.values()) {
-      if (infoLogLevel.getValue() == value) {
+      if (infoLogLevel.getValue() == value){
         return infoLogLevel;
       }
     }

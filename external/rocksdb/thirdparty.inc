@@ -1,4 +1,3 @@
-# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
 # Edit definitions below to specify paths to include files and libraries of all 3rd party libraries
 
 # TODO: Make this work with find_package and/or get rid of it
@@ -25,11 +24,11 @@ endif ()
 
 if (WITH_GFLAGS)
   message(STATUS "GFLAGS library is enabled")
-
+  
   if(DEFINED ENV{GFLAGS_INCLUDE})
     set(GFLAGS_INCLUDE $ENV{GFLAGS_INCLUDE})
   endif()
-
+  
   if(DEFINED ENV{GFLAGS_LIB_DEBUG})
     set(GFLAGS_LIB_DEBUG $ENV{GFLAGS_LIB_DEBUG})
   endif()
@@ -37,7 +36,7 @@ if (WITH_GFLAGS)
   if(DEFINED ENV{GFLAGS_LIB_RELEASE})
     set(GFLAGS_LIB_RELEASE $ENV{GFLAGS_LIB_RELEASE})
   endif()
-
+  
   set(GFLAGS_CXX_FLAGS -DGFLAGS=gflags)
   set(GFLAGS_LIBS debug ${GFLAGS_LIB_DEBUG} optimized ${GFLAGS_LIB_RELEASE})
 
@@ -98,34 +97,34 @@ endif ()
 
 
 # For compatibility
-if (LZ4)
-  set(WITH_LZ4 ON)
-endif ()
+#if (LZ4)
+#  set(WITH_LZ4 ON)
+#endif ()
 
-if (WITH_LZ4)
-  message(STATUS "LZ4 library is enabled")
+#if (WITH_LZ4)
+#  message(STATUS "LZ4 library is enabled")
+  
+#  if(DEFINED ENV{LZ4_INCLUDE})
+#    set(LZ4_INCLUDE $ENV{LZ4_INCLUDE})
+#  endif()
+  
+#  if(DEFINED ENV{LZ4_LIB_DEBUG})
+#    set(LZ4_LIB_DEBUG $ENV{LZ4_LIB_DEBUG})
+#  endif()
 
-  if(DEFINED ENV{LZ4_INCLUDE})
-    set(LZ4_INCLUDE $ENV{LZ4_INCLUDE})
-  endif()
-
-  if(DEFINED ENV{LZ4_LIB_DEBUG})
-    set(LZ4_LIB_DEBUG $ENV{LZ4_LIB_DEBUG})
-  endif()
-
-  if(DEFINED ENV{LZ4_LIB_RELEASE})
-    set(LZ4_LIB_RELEASE $ENV{LZ4_LIB_RELEASE})
-  endif()
-
-  set(LZ4_CXX_FLAGS -DLZ4)
-  set(LZ4_LIBS debug ${LZ4_LIB_DEBUG} optimized ${LZ4_LIB_RELEASE})
-
-  add_definitions(${LZ4_CXX_FLAGS})
-  include_directories(${LZ4_INCLUDE})
-  set (THIRDPARTY_LIBS ${THIRDPARTY_LIBS} ${LZ4_LIBS})
-else ()
-  message(STATUS "LZ4 library is disabled")
-endif ()
+#  if(DEFINED ENV{LZ4_LIB_RELEASE})
+#    set(LZ4_LIB_RELEASE $ENV{LZ4_LIB_RELEASE})
+#  endif()
+  
+#  set(LZ4_CXX_FLAGS -DLZ4)
+#  set(LZ4_LIBS debug ${LZ4_LIB_DEBUG} optimized ${LZ4_LIB_RELEASE})
+#
+#  add_definitions(${LZ4_CXX_FLAGS})
+#  include_directories(${LZ4_INCLUDE})
+#  set (THIRDPARTY_LIBS ${THIRDPARTY_LIBS} ${LZ4_LIBS})
+#else ()
+#  message(STATUS "LZ4 library is disabled")
+#endif ()
 
 # ================================================== ZLIB ==================================================
 #
@@ -147,7 +146,7 @@ if (WITH_ZLIB)
   if(DEFINED ENV{ZLIB_INCLUDE})
     set(ZLIB_INCLUDE $ENV{ZLIB_INCLUDE})
   endif()
-
+  
   if(DEFINED ENV{ZLIB_LIB_DEBUG})
     set(ZLIB_LIB_DEBUG $ENV{ZLIB_LIB_DEBUG})
   endif()
@@ -155,7 +154,7 @@ if (WITH_ZLIB)
   if(DEFINED ENV{ZLIB_LIB_RELEASE})
     set(ZLIB_LIB_RELEASE $ENV{ZLIB_LIB_RELEASE})
   endif()
-
+  
   set(ZLIB_CXX_FLAGS -DZLIB)
   set(ZLIB_LIBS debug ${ZLIB_LIB_DEBUG} optimized ${ZLIB_LIB_RELEASE})
 
@@ -178,7 +177,7 @@ if (WITH_XPRESS)
   message(STATUS "XPRESS is enabled")
 
   add_definitions(-DXPRESS)
-
+  
   # We are using the implementation provided by the system
   set (SYSTEM_LIBS ${SYSTEM_LIBS} Cabinet.lib)
 else ()
@@ -190,13 +189,15 @@ endif ()
 #
 # Edit these 4 lines to define paths to ZSTD
 #
-#set(ZSTD_HOME $ENV{THIRDPARTY_HOME}/ZSTD.Library)
-#set(ZSTD_INCLUDE ${ZSTD_HOME}/build/native/inc)
-#set(ZSTD_LIB_DEBUG ${ZSTD_HOME}/lib/native/debug/amd64/libzstd_static.lib)
-#set(ZSTD_LIB_RELEASE ${ZSTD_HOME}/lib/native/retail/amd64/libzstd_static.lib)
+set(ZSTD_HOME $ENV{THIRDPARTY_HOME}/ZSTD.Library)
+set(ZSTD_INCLUDE ${ZSTD_HOME}/build/native/inc)
+set(ZSTD_LIB_DEBUG ${ZSTD_HOME}/lib/native/debug/amd64/libzstd_static.lib)
+set(ZSTD_LIB_RELEASE ${ZSTD_HOME}/lib/native/retail/amd64/libzstd_static.lib)
 
 # For compatibility
-set(WITH_ZSTD ON)
+if (ZSTD)
+  set(WITH_ZSTD ON)
+endif ()
 
 if (WITH_ZSTD)
   message(STATUS "ZSTD library is enabled")
@@ -204,7 +205,7 @@ if (WITH_ZSTD)
   if(DEFINED ENV{ZSTD_INCLUDE})
     set(ZSTD_INCLUDE $ENV{ZSTD_INCLUDE})
   endif()
-
+  
   if(DEFINED ENV{ZSTD_LIB_DEBUG})
     set(ZSTD_LIB_DEBUG $ENV{ZSTD_LIB_DEBUG})
   endif()
@@ -239,12 +240,12 @@ endif()
 
 if (WITH_JEMALLOC)
   message(STATUS "JEMALLOC library is enabled")
-  set(JEMALLOC_CXX_FLAGS "-DROCKSDB_JEMALLOC -DJEMALLOC_EXPORT= -DJEMALLOC_NO_RENAME")
-
+  set(JEMALLOC_CXX_FLAGS "-DROCKSDB_JEMALLOC -DJEMALLOC_EXPORT= ")
+  
   if(DEFINED ENV{JEMALLOC_INCLUDE})
     set(JEMALLOC_INCLUDE $ENV{JEMALLOC_INCLUDE})
   endif()
-
+  
   if(DEFINED ENV{JEMALLOC_LIB_DEBUG})
     set(JEMALLOC_LIB_DEBUG $ENV{JEMALLOC_LIB_DEBUG})
   endif()

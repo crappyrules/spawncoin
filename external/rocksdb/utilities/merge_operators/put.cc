@@ -8,7 +8,7 @@
 #include "rocksdb/merge_operator.h"
 #include "utilities/merge_operators.h"
 
-using namespace ROCKSDB_NAMESPACE;
+using namespace rocksdb;
 
 namespace { // anonymous namespace
 
@@ -22,9 +22,10 @@ namespace { // anonymous namespace
 // From the client-perspective, semantics are the same.
 class PutOperator : public MergeOperator {
  public:
-  bool FullMerge(const Slice& /*key*/, const Slice* /*existing_value*/,
-                 const std::deque<std::string>& operand_sequence,
-                 std::string* new_value, Logger* /*logger*/) const override {
+  virtual bool FullMerge(const Slice& /*key*/, const Slice* /*existing_value*/,
+                         const std::deque<std::string>& operand_sequence,
+                         std::string* new_value,
+                         Logger* /*logger*/) const override {
     // Put basically only looks at the current/latest value
     assert(!operand_sequence.empty());
     assert(new_value != nullptr);
@@ -32,36 +33,38 @@ class PutOperator : public MergeOperator {
     return true;
   }
 
-  bool PartialMerge(const Slice& /*key*/, const Slice& /*left_operand*/,
-                    const Slice& right_operand, std::string* new_value,
-                    Logger* /*logger*/) const override {
+  virtual bool PartialMerge(const Slice& /*key*/, const Slice& /*left_operand*/,
+                            const Slice& right_operand, std::string* new_value,
+                            Logger* /*logger*/) const override {
     new_value->assign(right_operand.data(), right_operand.size());
     return true;
   }
 
   using MergeOperator::PartialMergeMulti;
-  bool PartialMergeMulti(const Slice& /*key*/,
-                         const std::deque<Slice>& operand_list,
-                         std::string* new_value,
-                         Logger* /*logger*/) const override {
+  virtual bool PartialMergeMulti(const Slice& /*key*/,
+                                 const std::deque<Slice>& operand_list,
+                                 std::string* new_value,
+                                 Logger* /*logger*/) const override {
     new_value->assign(operand_list.back().data(), operand_list.back().size());
     return true;
   }
 
-  const char* Name() const override { return "PutOperator"; }
+  virtual const char* Name() const override {
+    return "PutOperator";
+  }
 };
 
 class PutOperatorV2 : public PutOperator {
-  bool FullMerge(const Slice& /*key*/, const Slice* /*existing_value*/,
-                 const std::deque<std::string>& /*operand_sequence*/,
-                 std::string* /*new_value*/,
-                 Logger* /*logger*/) const override {
+  virtual bool FullMerge(const Slice& /*key*/, const Slice* /*existing_value*/,
+                         const std::deque<std::string>& /*operand_sequence*/,
+                         std::string* /*new_value*/,
+                         Logger* /*logger*/) const override {
     assert(false);
     return false;
   }
 
-  bool FullMergeV2(const MergeOperationInput& merge_in,
-                   MergeOperationOutput* merge_out) const override {
+  virtual bool FullMergeV2(const MergeOperationInput& merge_in,
+                           MergeOperationOutput* merge_out) const override {
     // Put basically only looks at the current/latest value
     assert(!merge_in.operand_list.empty());
     merge_out->existing_operand = merge_in.operand_list.back();
@@ -71,7 +74,7 @@ class PutOperatorV2 : public PutOperator {
 
 } // end of anonymous namespace
 
-namespace ROCKSDB_NAMESPACE {
+namespace rocksdb {
 
 std::shared_ptr<MergeOperator> MergeOperators::CreateDeprecatedPutOperator() {
   return std::make_shared<PutOperator>();
@@ -80,4 +83,4 @@ std::shared_ptr<MergeOperator> MergeOperators::CreateDeprecatedPutOperator() {
 std::shared_ptr<MergeOperator> MergeOperators::CreatePutOperator() {
   return std::make_shared<PutOperatorV2>();
 }
-}  // namespace ROCKSDB_NAMESPACE
+}

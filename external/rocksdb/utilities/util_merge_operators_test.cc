@@ -3,11 +3,11 @@
 //  COPYING file in the root directory) and Apache 2.0 License
 //  (found in the LICENSE.Apache file in the root directory).
 
-#include "test_util/testharness.h"
-#include "test_util/testutil.h"
+#include "util/testharness.h"
+#include "util/testutil.h"
 #include "utilities/merge_operators.h"
 
-namespace ROCKSDB_NAMESPACE {
+namespace rocksdb {
 
 class UtilMergeOperatorTest : public testing::Test {
  public:
@@ -91,7 +91,7 @@ TEST_F(UtilMergeOperatorTest, MaxMergeOperator) {
   EXPECT_EQ("a", PartialMerge("a", ""));
 }
 
-}  // namespace ROCKSDB_NAMESPACE
+}  // namespace rocksdb
 
 int main(int argc, char** argv) {
   ::testing::InitGoogleTest(&argc, argv);

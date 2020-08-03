@@ -1,4 +1,3 @@
-// Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
 //  Copyright (c) 2015, Red Hat, Inc.  All rights reserved.
 //  This source code is licensed under both the GPLv2 (found in the
 //  COPYING file in the root directory) and Apache 2.0 License
@@ -8,9 +7,9 @@
 
 #include "rocksdb/utilities/env_mirror.h"
 #include "env/mock_env.h"
-#include "test_util/testharness.h"
+#include "util/testharness.h"
 
-namespace ROCKSDB_NAMESPACE {
+namespace rocksdb {
 
 class EnvMirrorTest : public testing::Test {
  public:
@@ -33,7 +32,7 @@ class EnvMirrorTest : public testing::Test {
 
 TEST_F(EnvMirrorTest, Basics) {
   uint64_t file_size;
-  std::unique_ptr<WritableFile> writable_file;
+  unique_ptr<WritableFile> writable_file;
   std::vector<std::string> children;
 
   ASSERT_OK(env_->CreateDir("/dir"));
@@ -92,8 +91,8 @@ TEST_F(EnvMirrorTest, Basics) {
   ASSERT_EQ(3U, file_size);
 
   // Check that opening non-existent file fails.
-  std::unique_ptr<SequentialFile> seq_file;
-  std::unique_ptr<RandomAccessFile> rand_file;
+  unique_ptr<SequentialFile> seq_file;
+  unique_ptr<RandomAccessFile> rand_file;
   ASSERT_TRUE(
       !env_->NewSequentialFile("/dir/non_existent", &seq_file, soptions_).ok());
   ASSERT_TRUE(!seq_file);
@@ -111,9 +110,9 @@ TEST_F(EnvMirrorTest, Basics) {
 }
 
 TEST_F(EnvMirrorTest, ReadWrite) {
-  std::unique_ptr<WritableFile> writable_file;
-  std::unique_ptr<SequentialFile> seq_file;
-  std::unique_ptr<RandomAccessFile> rand_file;
+  unique_ptr<WritableFile> writable_file;
+  unique_ptr<SequentialFile> seq_file;
+  unique_ptr<RandomAccessFile> rand_file;
   Slice result;
   char scratch[100];
 
@@ -163,7 +162,7 @@ TEST_F(EnvMirrorTest, Misc) {
   ASSERT_OK(env_->GetTestDirectory(&test_dir));
   ASSERT_TRUE(!test_dir.empty());
 
-  std::unique_ptr<WritableFile> writable_file;
+  unique_ptr<WritableFile> writable_file;
   ASSERT_OK(env_->NewWritableFile("/a/b", &writable_file, soptions_));
 
   // These are no-ops, but we test they return success.
@@ -182,13 +181,13 @@ TEST_F(EnvMirrorTest, LargeWrite) {
     write_data.append(1, static_cast<char>(i));
   }
 
-  std::unique_ptr<WritableFile> writable_file;
+  unique_ptr<WritableFile> writable_file;
   ASSERT_OK(env_->NewWritableFile("/dir/f", &writable_file, soptions_));
   ASSERT_OK(writable_file->Append("foo"));
   ASSERT_OK(writable_file->Append(write_data));
   writable_file.reset();
 
-  std::unique_ptr<SequentialFile> seq_file;
+  unique_ptr<SequentialFile> seq_file;
   Slice result;
   ASSERT_OK(env_->NewSequentialFile("/dir/f", &seq_file, soptions_));
   ASSERT_OK(seq_file->Read(3, &result, scratch));  // Read "foo".
@@ -205,7 +204,7 @@ TEST_F(EnvMirrorTest, LargeWrite) {
   delete[] scratch;
 }
 
-}  // namespace ROCKSDB_NAMESPACE
+}  // namespace rocksdb
 
 int main(int argc, char** argv) {
   ::testing::InitGoogleTest(&argc, argv);

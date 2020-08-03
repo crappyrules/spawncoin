@@ -7,14 +7,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file. See the AUTHORS file for names of contributors.
 
-#include "file/filename.h"
+#include "util/filename.h"
 
 #include "db/dbformat.h"
-#include "logging/logging.h"
 #include "port/port.h"
-#include "test_util/testharness.h"
+#include "util/logging.h"
+#include "util/testharness.h"
 
-namespace ROCKSDB_NAMESPACE {
+namespace rocksdb {
 
 class FileNameTest : public testing::Test {};
 
@@ -172,7 +172,7 @@ TEST_F(FileNameTest, Construction) {
   ASSERT_EQ(kMetaDatabase, type);
 }
 
-}  // namespace ROCKSDB_NAMESPACE
+}  // namespace rocksdb
 
 int main(int argc, char** argv) {
   ::testing::InitGoogleTest(&argc, argv);

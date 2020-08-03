@@ -1,68 +1,37 @@
 // Copyright (c) 2012-2017, The CryptoNote developers, The Bytecoin developers
-// Copyright (c) 2018-2019, The TurtleCoin Developers
 //
-// Please see the included LICENSE file for more information.
+// This file is part of Bytecoin.
+//
+// Bytecoin is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Bytecoin is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with Bytecoin.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
-
-#include "IReadBatch.h"
-#include "IWriteBatch.h"
 
 #include <string>
 #include <system_error>
 
-namespace CryptoNote
-{
-    struct DataBaseConfig
-    {
-        DataBaseConfig(
-            const std::string dataDirectory,
-            const uint64_t backgroundThreads,
-            const uint64_t openFiles,
-            const uint64_t writeBufferMB,
-            const uint64_t readCacheMB,
-            const uint64_t maxFileSizeMB,
-            const bool enableDbCompression) :
-            dataDir(dataDirectory),
-            backgroundThreadsCount(backgroundThreads),
-            maxOpenFiles(openFiles),
-            writeBufferSize(writeBufferMB * 1024 * 1024),
-            readCacheSize(readCacheMB * 1024 * 1024),
-            maxFileSize(maxFileSizeMB * 1024 * 1024),
-            compressionEnabled(enableDbCompression)
-        {
-        }
+#include "IWriteBatch.h"
+#include "IReadBatch.h"
 
-        std::string dataDir;
+namespace CryptoNote {
 
-        uint64_t backgroundThreadsCount;
+class IDataBase {
+public:
+  virtual ~IDataBase() {
+  }
 
-        uint64_t maxOpenFiles;
+  virtual std::error_code write(IWriteBatch& batch) = 0;
 
-        uint64_t writeBufferSize;
-
-        uint64_t readCacheSize;
-
-        uint64_t maxFileSize;
-
-        bool compressionEnabled;
-    };
-
-    class IDataBase
-    {
-      public:
-        virtual ~IDataBase() {}
-
-        virtual void init(const DataBaseConfig &config) = 0;
-
-        virtual void shutdown() = 0;
-
-        virtual void destroy(const DataBaseConfig &config) = 0;
-
-        virtual std::error_code write(IWriteBatch &batch) = 0;
-
-        virtual std::error_code read(IReadBatch &batch) = 0;
-
-        virtual std::error_code readThreadSafe(IReadBatch &batch) = 0;
-    };
-} // namespace CryptoNote
+  virtual std::error_code read(IReadBatch& batch) = 0;
+};
+}

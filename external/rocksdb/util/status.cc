@@ -15,48 +15,26 @@
 #include <cstring>
 #include "port/port.h"
 
-namespace ROCKSDB_NAMESPACE {
+namespace rocksdb {
 
 const char* Status::CopyState(const char* state) {
 #ifdef OS_WIN
-  const size_t cch = std::strlen(state) + 1;  // +1 for the null terminator
+  const size_t cch =
+      std::strlen(state) + 1; // +1 for the null terminator
   char* result = new char[cch];
-  errno_t ret
-#if defined(_MSC_VER)
-    ;
-#else
-    __attribute__((__unused__));
-#endif
+  errno_t ret;
   ret = strncpy_s(result, cch, state, cch - 1);
   result[cch - 1] = '\0';
   assert(ret == 0);
   return result;
 #else
-  const size_t cch = std::strlen(state) + 1;  // +1 for the null terminator
+  const size_t cch =
+      std::strlen(state) + 1; // +1 for the null terminator
   return std::strncpy(new char[cch], state, cch);
 #endif
 }
 
-static const char* msgs[static_cast<int>(Status::kMaxSubCode)] = {
-    "",                                                   // kNone
-    "Timeout Acquiring Mutex",                            // kMutexTimeout
-    "Timeout waiting to lock key",                        // kLockTimeout
-    "Failed to acquire lock due to max_num_locks limit",  // kLockLimit
-    "No space left on device",                            // kNoSpace
-    "Deadlock",                                           // kDeadlock
-    "Stale file handle",                                  // kStaleFile
-    "Memory limit reached",                               // kMemoryLimit
-    "Space limit reached",                                // kSpaceLimit
-    "No such file or directory",                          // kPathNotFound
-    // KMergeOperandsInsufficientCapacity
-    "Insufficient capacity for merge operands",
-    // kManualCompactionPaused
-    "Manual compaction paused",
-    " (overwritten)",  // kOverwritten, subcode of OK
-};
-
-Status::Status(Code _code, SubCode _subcode, const Slice& msg,
-               const Slice& msg2)
+Status::Status(Code _code, SubCode _subcode, const Slice& msg, const Slice& msg2)
     : code_(_code), subcode_(_subcode), sev_(kNoError) {
   assert(code_ != kOk);
   assert(subcode_ != kMaxSubCode);
@@ -119,9 +97,6 @@ std::string Status::ToString() const {
     case kTryAgain:
       type = "Operation failed. Try again.: ";
       break;
-    case kColumnFamilyDropped:
-      type = "Column family dropped: ";
-      break;
     default:
       snprintf(tmp, sizeof(tmp), "Unknown code(%d): ",
                static_cast<int>(code()));
@@ -141,4 +116,4 @@ std::string Status::ToString() const {
   return result;
 }
 
-}  // namespace ROCKSDB_NAMESPACE
+}  // namespace rocksdb

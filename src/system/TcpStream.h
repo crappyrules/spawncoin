@@ -1,7 +1,19 @@
 // Copyright (c) 2012-2017, The CryptoNote developers, The Bytecoin developers
-// Copyright (c) 2018-2019, The TurtleCoin Developers
 //
-// Please see the included LICENSE file for more information.
+// This file is part of Bytecoin.
+//
+// Bytecoin is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Bytecoin is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with Bytecoin.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
@@ -9,35 +21,26 @@
 #include <cstdint>
 #include <streambuf>
 
-namespace System
-{
-    class TcpConnection;
+namespace System {
 
-    class TcpStreambuf : public std::streambuf
-    {
-      public:
-        explicit TcpStreambuf(TcpConnection &connection);
+class TcpConnection;
 
-        TcpStreambuf(const TcpStreambuf &) = delete;
+class TcpStreambuf : public std::streambuf {
+public:
+  explicit TcpStreambuf(TcpConnection& connection);
+  TcpStreambuf(const TcpStreambuf&) = delete;
+  ~TcpStreambuf();
+  TcpStreambuf& operator=(const TcpStreambuf&) = delete;
 
-        ~TcpStreambuf();
+private:
+  TcpConnection& connection;
+  std::array<char, 4096> readBuf;
+  std::array<uint8_t, 1024> writeBuf;
 
-        TcpStreambuf &operator=(const TcpStreambuf &) = delete;
+  std::streambuf::int_type overflow(std::streambuf::int_type ch) override;
+  int sync() override;
+  std::streambuf::int_type underflow() override;
+  bool dumpBuffer(bool finalize);
+};
 
-      private:
-        TcpConnection &connection;
-
-        std::array<char, 4096> readBuf;
-
-        std::array<uint8_t, 1024> writeBuf;
-
-        std::streambuf::int_type overflow(std::streambuf::int_type ch) override;
-
-        int sync() override;
-
-        std::streambuf::int_type underflow() override;
-
-        bool dumpBuffer(bool finalize);
-    };
-
-} // namespace System
+}

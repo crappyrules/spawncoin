@@ -12,7 +12,7 @@
 #include "rocksdb/env.h"
 #include "table/iterator_wrapper.h"
 
-namespace ROCKSDB_NAMESPACE {
+namespace rocksdb {
 
 struct ReadOptions;
 class InternalKeyComparator;
@@ -22,9 +22,9 @@ struct TwoLevelIteratorState {
   TwoLevelIteratorState() {}
 
   virtual ~TwoLevelIteratorState() {}
-  virtual InternalIteratorBase<IndexValue>* NewSecondaryIterator(
-      const BlockHandle& handle) = 0;
+  virtual InternalIterator* NewSecondaryIterator(const Slice& handle) = 0;
 };
+
 
 // Return a new two level iterator.  A two-level iterator contains an
 // index iterator whose values point to a sequence of blocks where
@@ -36,8 +36,7 @@ struct TwoLevelIteratorState {
 // Uses a supplied function to convert an index_iter value into
 // an iterator over the contents of the corresponding block.
 // Note: this function expects first_level_iter was not created using the arena
-extern InternalIteratorBase<IndexValue>* NewTwoLevelIterator(
-    TwoLevelIteratorState* state,
-    InternalIteratorBase<IndexValue>* first_level_iter);
+extern InternalIterator* NewTwoLevelIterator(
+    TwoLevelIteratorState* state, InternalIterator* first_level_iter);
 
-}  // namespace ROCKSDB_NAMESPACE
+}  // namespace rocksdb

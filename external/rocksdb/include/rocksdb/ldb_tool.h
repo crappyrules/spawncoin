@@ -2,14 +2,14 @@
 //  This source code is licensed under both the GPLv2 (found in the
 //  COPYING file in the root directory) and Apache 2.0 License
 //  (found in the LICENSE.Apache file in the root directory).
-#pragma once
 #ifndef ROCKSDB_LITE
+#pragma once
 #include <string>
 #include <vector>
 #include "rocksdb/db.h"
 #include "rocksdb/options.h"
 
-namespace ROCKSDB_NAMESPACE {
+namespace rocksdb {
 
 // An interface for converting a slice to a readable string
 class SliceFormatter {
@@ -38,6 +38,6 @@ class LDBTool {
       const std::vector<ColumnFamilyDescriptor>* column_families = nullptr);
 };
 
-}  // namespace ROCKSDB_NAMESPACE
+} // namespace rocksdb
 
 #endif  // ROCKSDB_LITE

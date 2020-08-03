@@ -20,7 +20,7 @@ public abstract class AbstractImmutableNativeReference
    * A flag indicating whether the current {@code AbstractNativeReference} is
    * responsible to free the underlying C++ object
    */
-  protected final AtomicBoolean owningHandle_;
+  private final AtomicBoolean owningHandle_;
 
   protected AbstractImmutableNativeReference(final boolean owningHandle) {
     this.owningHandle_ = new AtomicBoolean(owningHandle);

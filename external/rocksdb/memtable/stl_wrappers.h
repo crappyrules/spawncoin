@@ -11,8 +11,9 @@
 #include "rocksdb/memtablerep.h"
 #include "rocksdb/slice.h"
 #include "util/coding.h"
+#include "util/murmurhash.h"
 
-namespace ROCKSDB_NAMESPACE {
+namespace rocksdb {
 namespace stl_wrappers {
 
 class Base {
@@ -30,4 +31,4 @@ struct Compare : private Base {
 };
 
 }
-}  // namespace ROCKSDB_NAMESPACE
+}

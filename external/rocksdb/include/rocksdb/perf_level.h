@@ -3,14 +3,13 @@
 //  COPYING file in the root directory) and Apache 2.0 License
 //  (found in the LICENSE.Apache file in the root directory).
 
-#pragma once
+#ifndef INCLUDE_ROCKSDB_PERF_LEVEL_H_
+#define INCLUDE_ROCKSDB_PERF_LEVEL_H_
 
 #include <stdint.h>
 #include <string>
 
-#include "rocksdb/rocksdb_namespace.h"
-
-namespace ROCKSDB_NAMESPACE {
+namespace rocksdb {
 
 // How much perf stats to collect. Affects perf_context and iostats_context.
 enum PerfLevel : unsigned char {
@@ -19,11 +18,8 @@ enum PerfLevel : unsigned char {
   kEnableCount = 2,               // enable only count stats
   kEnableTimeExceptForMutex = 3,  // Other than count stats, also enable time
                                   // stats except for mutexes
-  // Other than time, also measure CPU time counters. Still don't measure
-  // time (neither wall time nor CPU time) for mutexes.
-  kEnableTimeAndCPUTimeExceptForMutex = 4,
-  kEnableTime = 5,  // enable count and time stats
-  kOutOfBounds = 6  // N.B. Must always be the last value!
+  kEnableTime = 4,                // enable count and time stats
+  kOutOfBounds = 5                // N.B. Must always be the last value!
 };
 
 // set the perf stats level for current thread
@@ -32,4 +28,6 @@ void SetPerfLevel(PerfLevel level);
 // get current perf stats level for current thread
 PerfLevel GetPerfLevel();
 
-}  // namespace ROCKSDB_NAMESPACE
+}  // namespace rocksdb
+
+#endif  // INCLUDE_ROCKSDB_PERF_LEVEL_H_

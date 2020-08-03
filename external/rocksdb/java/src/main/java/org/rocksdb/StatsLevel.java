@@ -60,6 +60,6 @@ public enum StatsLevel {
             }
         }
         throw new IllegalArgumentException(
-                "Illegal value provided for StatsLevel.");
+                "Illegal value provided for InfoLogLevel.");
     }
 }

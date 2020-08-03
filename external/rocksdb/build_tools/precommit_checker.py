@@ -1,5 +1,4 @@
-#!/usr/bin/env python2.7
-# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
+#!/usr/local/fbcode/gcc-4.9-glibc-2.20-fb/bin/python2.7
 
 from __future__ import absolute_import
 from __future__ import division

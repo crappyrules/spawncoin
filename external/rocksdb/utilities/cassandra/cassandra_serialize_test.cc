@@ -3,12 +3,12 @@
 //  COPYING file in the root directory) and Apache 2.0 License
 //  (found in the LICENSE.Apache file in the root directory).
 
-#include "test_util/testharness.h"
+#include "util/testharness.h"
 #include "utilities/cassandra/serialize.h"
 
-using namespace ROCKSDB_NAMESPACE::cassandra;
+using namespace rocksdb::cassandra;
 
-namespace ROCKSDB_NAMESPACE {
+namespace rocksdb {
 namespace cassandra {
 
 TEST(SerializeTest, SerializeI64) {
@@ -180,7 +180,7 @@ TEST(SerializeTest, DeserializeI8) {
 }
 
 } // namespace cassandra
-}  // namespace ROCKSDB_NAMESPACE
+} // namespace rocksdb
 
 int main(int argc, char** argv) {
   ::testing::InitGoogleTest(&argc, argv);

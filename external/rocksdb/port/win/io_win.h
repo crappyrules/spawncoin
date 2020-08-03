@@ -18,7 +18,8 @@
 
 #include <windows.h>
 
-namespace ROCKSDB_NAMESPACE {
+
+namespace rocksdb {
 namespace port {
 
 std::string GetWindowsErrSz(DWORD err);
@@ -26,9 +27,7 @@ std::string GetWindowsErrSz(DWORD err);
 inline Status IOErrorFromWindowsError(const std::string& context, DWORD err) {
   return ((err == ERROR_HANDLE_DISK_FULL) || (err == ERROR_DISK_FULL))
              ? Status::NoSpace(context, GetWindowsErrSz(err))
-             : ((err == ERROR_FILE_NOT_FOUND) || (err == ERROR_PATH_NOT_FOUND))
-                   ? Status::PathNotFound(context, GetWindowsErrSz(err))
-                   : Status::IOError(context, GetWindowsErrSz(err));
+             : Status::IOError(context, GetWindowsErrSz(err));
 }
 
 inline Status IOErrorFromLastWindowsError(const std::string& context) {
@@ -38,9 +37,7 @@ inline Status IOErrorFromLastWindowsError(const std::string& context) {
 inline Status IOError(const std::string& context, int err_number) {
   return (err_number == ENOSPC)
              ? Status::NoSpace(context, strerror(err_number))
-             : (err_number == ENOENT)
-                   ? Status::PathNotFound(context, strerror(err_number))
-                   : Status::IOError(context, strerror(err_number));
+             : Status::IOError(context, strerror(err_number));
 }
 
 class WinFileData;
@@ -61,7 +58,7 @@ class WinFileData {
  protected:
   const std::string filename_;
   HANDLE hFile_;
-  // If true, the I/O issued would be direct I/O which the buffer
+  // If ture,  the I/O issued would be direct I/O which the buffer
   // will need to be aligned (not sure there is a guarantee that the buffer
   // passed in is aligned).
   const bool use_direct_io_;
@@ -429,7 +426,9 @@ public:
 class WinDirectory : public Directory {
   HANDLE handle_;
  public:
-  explicit WinDirectory(HANDLE h) noexcept : handle_(h) {
+  explicit
+  WinDirectory(HANDLE h) noexcept : 
+    handle_(h) {
     assert(handle_ != INVALID_HANDLE_VALUE);
   }
   ~WinDirectory() {
@@ -453,4 +452,4 @@ class WinFileLock : public FileLock {
   HANDLE hFile_;
 };
 }
-}  // namespace ROCKSDB_NAMESPACE
+}

@@ -17,7 +17,7 @@
 
 #include <string>
 
-namespace ROCKSDB_NAMESPACE {
+namespace rocksdb {
 
 #ifdef ROCKSDB_USING_THREAD_STATUS
 
@@ -70,7 +70,7 @@ static OperationStageInfo global_op_stage_table[] = {
   {ThreadStatus::STAGE_MEMTABLE_ROLLBACK,
       "MemTableList::RollbackMemtableFlush"},
   {ThreadStatus::STAGE_MEMTABLE_INSTALL_FLUSH_RESULTS,
-      "MemTableList::TryInstallMemtableFlushResults"},
+      "MemTableList::InstallMemtableFlushResults"},
 };
 
 // The structure that describes a state.
@@ -118,4 +118,4 @@ struct StateInfo {
 };
 
 #endif  // ROCKSDB_USING_THREAD_STATUS
-}  // namespace ROCKSDB_NAMESPACE
+}  // namespace rocksdb

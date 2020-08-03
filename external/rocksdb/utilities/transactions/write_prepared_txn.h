@@ -30,7 +30,7 @@
 #include "utilities/transactions/transaction_base.h"
 #include "utilities/transactions/transaction_util.h"
 
-namespace ROCKSDB_NAMESPACE {
+namespace rocksdb {
 
 class WritePreparedTxnDB;
 
@@ -42,9 +42,6 @@ class WritePreparedTxn : public PessimisticTransaction {
  public:
   WritePreparedTxn(WritePreparedTxnDB* db, const WriteOptions& write_options,
                    const TransactionOptions& txn_options);
-  // No copying allowed
-  WritePreparedTxn(const WritePreparedTxn&) = delete;
-  void operator=(const WritePreparedTxn&) = delete;
 
   virtual ~WritePreparedTxn() {}
 
@@ -56,18 +53,9 @@ class WritePreparedTxn : public PessimisticTransaction {
                      ColumnFamilyHandle* column_family, const Slice& key,
                      PinnableSlice* value) override;
 
-  using Transaction::MultiGet;
-  virtual void MultiGet(const ReadOptions& options,
-                        ColumnFamilyHandle* column_family,
-                        const size_t num_keys, const Slice* keys,
-                        PinnableSlice* values, Status* statuses,
-                        const bool sorted_input = false) override;
-
-  // Note: The behavior is undefined in presence of interleaved writes to the
-  // same transaction.
-  // To make WAL commit markers visible, the snapshot will be
-  // based on the last seq in the WAL that is also published,
-  // LastPublishedSequence, as opposed to the last seq in the memtable.
+  // To make WAL commit markers visible, the snapshot will be based on the last
+  // seq in the WAL that is also published, LastPublishedSequence, as opposed to
+  // the last seq in the memtable.
   using Transaction::GetIterator;
   virtual Iterator* GetIterator(const ReadOptions& options) override;
   virtual Iterator* GetIterator(const ReadOptions& options,
@@ -76,7 +64,6 @@ class WritePreparedTxn : public PessimisticTransaction {
   virtual void SetSnapshot() override;
 
  protected:
-  void Initialize(const TransactionOptions& txn_options) override;
   // Override the protected SetId to make it visible to the friend class
   // WritePreparedTxnDB
   inline void SetId(uint64_t id) override { Transaction::SetId(id); }
@@ -85,7 +72,6 @@ class WritePreparedTxn : public PessimisticTransaction {
   friend class WritePreparedTransactionTest_BasicRecoveryTest_Test;
   friend class WritePreparedTxnDB;
   friend class WriteUnpreparedTxnDB;
-  friend class WriteUnpreparedTxn;
 
   Status PrepareInternal() override;
 
@@ -109,11 +95,15 @@ class WritePreparedTxn : public PessimisticTransaction {
 
   virtual Status RebuildFromWriteBatch(WriteBatch* src_batch) override;
 
+  // No copying allowed
+  WritePreparedTxn(const WritePreparedTxn&);
+  void operator=(const WritePreparedTxn&);
+
   WritePreparedTxnDB* wpt_db_;
   // Number of sub-batches in prepare
   size_t prepare_batch_cnt_ = 0;
 };
 
-}  // namespace ROCKSDB_NAMESPACE
+}  // namespace rocksdb
 
 #endif  // ROCKSDB_LITE

@@ -57,8 +57,6 @@ public abstract class AbstractCompactionFilterFactory<T extends AbstractCompacti
    * A name which identifies this compaction filter
    *
    * The name will be printed to the LOG file on start up for diagnosis
-   *
-   * @return name which identifies this compaction filter.
    */
   public abstract String name();
 

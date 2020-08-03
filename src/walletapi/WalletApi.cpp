@@ -1,41 +1,29 @@
-// Copyright (c) 2018-2019, The TurtleCoin Developers
+// Copyright (c) 2018, The TurtleCoin Developers
 //
 // Please see the included LICENSE file for more information.
 
 #include <atomic>
+
 #include <chrono>
-#include <common/SignalHandler.h>
+
+#include <Common/SignalHandler.h>
+
 #include <config/CliHeader.h>
+
 #include <iostream>
-#include <logger/Logger.h>
+
+#include <Logger/Logger.h>
+
 #include <thread>
-#include <walletapi/ApiDispatcher.h>
-#include <walletapi/ParseArguments.h>
+
+#include <WalletApi/ApiDispatcher.h>
+#include <WalletApi/ParseArguments.h>
 
 int main(int argc, char **argv)
 {
-    ApiConfig config = parseArguments(argc, argv);
+    Config config = parseArguments(argc, argv);
 
     Logger::logger.setLogLevel(config.logLevel);
-
-    std::ofstream logFile;
-
-    if (config.loggingFilePath) {
-        logFile.open(*config.loggingFilePath, std::ios_base::app);
-    }
-
-    Logger::logger.setLogCallback([&config, &logFile](
-        const std::string prettyMessage,
-        const std::string message,
-        const Logger::LogLevel level,
-        const std::vector<Logger::LogCategory> categories) {
-
-        std::cout << prettyMessage << std::endl;
-
-        if (config.loggingFilePath) {
-            logFile << prettyMessage << std::endl;
-        }
-    });
 
     std::cout << CryptoNote::getProjectCLIHeader() << std::endl;
 
@@ -52,7 +40,9 @@ int main(int argc, char **argv)
 
         /* Init the API */
         api = std::make_shared<ApiDispatcher>(
-            config.port, config.rpcBindIp, config.rpcPassword, config.corsHeader, config.threads);
+            config.port, config.rpcBindIp, config.rpcPassword,
+            config.corsHeader
+        );
 
         /* Launch the API */
         apiThread = std::thread(&ApiDispatcher::start, api.get());
@@ -66,33 +56,21 @@ int main(int argc, char **argv)
 
         std::string address = "http://" + config.rpcBindIp + ":" + std::to_string(config.port);
 
-        std::cout << "The api has been launched on " << address << "." << std::endl;
-
-        if (!config.noConsole)
-        {
-            std::cout << "Type exit to save and shutdown." << std::endl;
-        }
+        std::cout << "The api has been launched on " << address
+                  << ".\nType exit to save and shutdown." << std::endl;
 
         while (!ctrl_c)
         {
-            /* If we are providing an interactive console we will do so here. */
-            if (!config.noConsole)
+            std::string input;
+
+            if (!std::getline(std::cin, input) || input == "exit" || input == "quit")
             {
-                std::string input;
-
-                if (!std::getline(std::cin, input) || input == "exit" || input == "quit")
-                {
-                    break;
-                }
-
-                if (input == "help")
-                {
-                    std::cout << "Type exit to save and shutdown." << std::endl;
-                }
+                break;
             }
-            else /* If not, then a brief sleep helps stop the thread from running away */
+
+            if (input == "help")
             {
-                std::this_thread::sleep_for(std::chrono::milliseconds(250));
+                std::cout << "Type exit to save and shutdown." << std::endl;
             }
         }
     }

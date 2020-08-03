@@ -10,9 +10,7 @@
 
 #include <functional>
 
-#include "rocksdb/rocksdb_namespace.h"
-
-namespace ROCKSDB_NAMESPACE {
+namespace rocksdb {
 
 /*
  * ThreadPool is a component that will spawn N background threads that will
@@ -49,10 +47,11 @@ class ThreadPool {
   virtual void SubmitJob(const std::function<void()>&) = 0;
   // This moves the function in for efficiency
   virtual void SubmitJob(std::function<void()>&&) = 0;
+
 };
 
 // NewThreadPool() is a function that could be used to create a ThreadPool
 // with `num_threads` background threads.
 extern ThreadPool* NewThreadPool(int num_threads);
 
-}  // namespace ROCKSDB_NAMESPACE
+}  // namespace rocksdb
