@@ -14,7 +14,7 @@ The CMake build system will, by default, create optimized native builds for your
 
 ##### Making Portable Binaries
 
-However, if you wish to create portable binaries that can be shared between systems, specify ``-DARCH=default` in your CMake arguments during the build process. Note that portable binaries will have a noticable difference in performance than native binaries. For this reason, it is always best to build for your particular system if possible.
+However, if you wish to create portable binaries that can be shared between systems, specify `-DARCH=default` in your CMake arguments during the build process. Note that portable binaries will have a noticable difference in performance than native binaries. For this reason, it is always best to build for your particular system if possible.
 
 #### Linux
 
