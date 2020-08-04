@@ -1,10 +1,11 @@
-# Spawncoin (MNG)
+# Spawncoin (SPWN)
 
 ### Specs
 * Algorithm - Cryptonight Turtle (ASIC resistant)
-* Supply - 10,000,000
+* Supply - 20,000,000,000
 * Decimals - 8
 * Blocktime - 120 seconds
+* Premine amount 20%
 
 ### Installing
 
@@ -51,7 +52,7 @@ If you are using Clang, you will need Clang 6.0 or higher. You will also need li
 The binaries will be in the `src` folder when you are complete.
 
 - `cd src`
-- `./Spawnd --version`
+- `./Spawncoind --version`
 
 ##### Ubuntu, using Clang
 
@@ -85,7 +86,7 @@ You need to modify the below command for your version of ubuntu - see https://ap
 The binaries will be in the `src` folder when you are complete.
 
 - `cd src`
-- `./Spawnd --version`
+- `./Spawncoind --version`
 
 ##### Generic Linux
 
@@ -104,7 +105,7 @@ See the ubuntu instructions for an example.
 The binaries will be in the `src` folder when you are complete.
 
 - `cd src`
-- `./Spawnd --version`
+- `./Spawncoind --version`
 
 #### OSX/Apple, using Clang
 
@@ -128,7 +129,7 @@ The binaries will be in the `src` folder when you are complete.
 The binaries will be in the `src` folder when you are complete.
 
 - `cd src`
-- `./Spawnd --version`
+- `./Spawncoind --version`
 
 #### Windows
 
@@ -141,9 +142,9 @@ You can build for 32-bit or 64-bit Windows. **If you're not sure, pick 64-bit.**
 - Install the latest version of Boost (currently Boost 1.68). Select the appropriate version for your system:
   - [Boost 64-bit](https://bintray.com/boostorg/release/download_file?file_path=1.68.0%2Fbinaries%2Fboost_1_68_0-msvc-14.1-64.exe)
   - [Boost 32-bit](https://bintray.com/boostorg/release/download_file?file_path=1.68.0%2Fbinaries%2Fboost_1_68_0-msvc-14.1-32.exe)
-- Install the latest full version of OpenSSL (currently OpenSSL 1.1.1g). Select the appropriate version for your system:
-  - [OpenSSL 64-bit](https://slproweb.com/download/Win64OpenSSL-1_1_1g.exe)
-  - [OpenSSL 32-bit](https://slproweb.com/download/Win32OpenSSL-1_1_1g.exe)
+- Install the latest full version of OpenSSL (currently OpenSSL 1.1.1f). Select the appropriate version for your system:
+  - [OpenSSL 64-bit](https://slproweb.com/download/Win64OpenSSL-1_1_1f.exe)
+  - [OpenSSL 32-bit](https://slproweb.com/download/Win32OpenSSL-1_1_1f.exe)
 
 ##### Building
 
@@ -182,7 +183,7 @@ Hi Spawncoin contributor, thanks for forking and sending back Pull Requests. Ext
 // Copyright (c) 2012-2017, The CryptoNote developers, The Bytecoin developers
 // Copyright (c) 2014-2018, The Monero Project
 // Copyright (c) 2018-2019, The TurtleCoin Developers
-// Copyright (c) 2020, The Spawncoin Developers
+// Copyright (c) 2019, The Spawncoin Developers
 //
 // Please see the included LICENSE file for more information.
 ```

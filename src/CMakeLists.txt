@@ -176,7 +176,7 @@ add_dependencies(WalletService version)
 add_dependencies(zedwallet version)
 
 # Finally build the binaries
-set_property(TARGET TurtleCoind PROPERTY OUTPUT_NAME "Spawnd")
+set_property(TARGET TurtleCoind PROPERTY OUTPUT_NAME "Spawncoind")
 set_property(TARGET zedwallet PROPERTY OUTPUT_NAME "spawnwallet")
 set_property(TARGET zedwallet++ PROPERTY OUTPUT_NAME "spawnwallet-beta")
 set_property(TARGET WalletService PROPERTY OUTPUT_NAME "spawncoin-service")

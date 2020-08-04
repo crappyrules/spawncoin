@@ -1,7 +1,7 @@
 // Copyright (c) 2012-2017, The CryptoNote developers, The Bytecoin developers
 // Copyright (c) 2014-2018, The Monero Project
 // Copyright (c) 2018-2019, The TurtleCoin Developers
-// Copyright (c) 2019, The Mangocoin Developers
+// Copyright (c) 2019, The Spawncoin Developers
 //
 // Please see the included LICENSE file for more information.
 
@@ -22,7 +22,7 @@ const uint64_t DIFFICULTY_TARGET                             = 120; // seconds
 const uint32_t CRYPTONOTE_MAX_BLOCK_NUMBER                   = 500000000;
 const size_t   CRYPTONOTE_MAX_BLOCK_BLOB_SIZE                = 500000000;
 const size_t   CRYPTONOTE_MAX_TX_SIZE                        = 1000000000;
-const uint64_t CRYPTONOTE_PUBLIC_ADDRESS_BASE58_PREFIX       = 25751; // 'M' address prefix
+const uint64_t CRYPTONOTE_PUBLIC_ADDRESS_BASE58_PREFIX       = 25751;
 const uint32_t CRYPTONOTE_MINED_MONEY_UNLOCK_WINDOW          = 20;
 const uint64_t CRYPTONOTE_BLOCK_FUTURE_TIME_LIMIT            = 60 * 60 * 2;
 const uint64_t CRYPTONOTE_BLOCK_FUTURE_TIME_LIMIT_V3         = 3 * DIFFICULTY_TARGET;
@@ -51,14 +51,14 @@ const uint64_t GENESIS_BLOCK_REWARD                          = UINT64_C(0);
 
 * Compile your code
 
-* Run mangowallet, ignore that it can't connect to the daemon, and generate an
+* Run spawnwallet, ignore that it can't connect to the daemon, and generate an
   address. Save this and the keys somewhere safe.
 
 * Launch the daemon with these arguments:
 --print-genesis-tx --genesis-block-reward-address <premine wallet address>
 
 For example:
-Mangocoind --print-genesis-tx --genesis-block-reward-address MEpLh1LswBqihtwVB7VuYAQP7E39SYSwVQwFVyAjpGd6fdALVvZk74YTq5jTo4DNnTdkw2wcWCzJ2EtVJ9k9DhioBWQ7GGq
+Spawncoind --print-genesis-tx --genesis-block-reward-address MEpLh1LswBqihtwVB7VuYAQP7E39SYSwVQwFVyAjpGd6fdALVvZk74YTq5jTo4DNnTdkw2wcWCzJ2EtVJ9k9DhioBWQ7GGq
 
 * Take the hash printed, and replace it with the hash below in GENESIS_COINBASE_TX_HEX
 
@@ -71,7 +71,7 @@ const char     GENESIS_COINBASE_TX_HEX[]                     = "013c01ff00018080
 static_assert(sizeof(GENESIS_COINBASE_TX_HEX)/sizeof(*GENESIS_COINBASE_TX_HEX) != 1, "GENESIS_COINBASE_TX_HEX must not be empty.");
 
 /* This is the unix timestamp of the first "mined" block (technically block 2, not the genesis block)
-   You can get this value by doing "print_block 2" in Mangocoind. It is used to know what timestamp
+   You can get this value by doing "print_block 2" in Spawncoind. It is used to know what timestamp
    to import from when the block height cannot be found in the node or the node is offline. */
 const uint64_t GENESIS_BLOCK_TIMESTAMP                       = 1562956646;
 
@@ -97,8 +97,8 @@ const uint64_t MINIMUM_MIXIN_V3                              = 0;
 const uint64_t MAXIMUM_MIXIN_V3                              = 3;
 
 /* The heights to activate the mixin limits at */
-const uint32_t MIXIN_LIMITS_V1_HEIGHT                        = 5000;
-const uint32_t MIXIN_LIMITS_V2_HEIGHT                        = 300000;
+const uint32_t MIXIN_LIMITS_V1_HEIGHT                        = 4000;
+const uint32_t MIXIN_LIMITS_V2_HEIGHT                        = 200000;
 const uint32_t MIXIN_LIMITS_V3_HEIGHT                        = 400000;
 
 /* The mixin to use by default with zedwallet and turtle-service */
@@ -229,8 +229,8 @@ const size_t   P2P_LOCAL_GRAY_PEERLIST_LIMIT                 =  5000;
 
 // P2P Network Configuration Section - This defines our current P2P network version
 // and the minimum version for communication between nodes
-const uint8_t  P2P_CURRENT_VERSION                           = 5;
-const uint8_t  P2P_MINIMUM_VERSION                           = 4;
+const uint8_t  P2P_CURRENT_VERSION                           = 5; // 5
+const uint8_t  P2P_MINIMUM_VERSION                           = 4; // 4
 
 // This defines the minimum P2P version required for lite blocks propogation
 const uint8_t P2P_LITE_BLOCKS_PROPOGATION_VERSION            = 4;

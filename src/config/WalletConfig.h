@@ -23,7 +23,7 @@ namespace WalletConfig
     const std::string addressBookFilename = ".addressBook.json";
 
     /* The name of your deamon */
-    const std::string daemonName = "Spawnd";
+    const std::string daemonName = "Spawncoind";
 
     /* The name to call this wallet */
     const std::string walletName = "spawnwallet";
@@ -36,7 +36,7 @@ namespace WalletConfig
     const std::string coinName = std::string(CryptoNote::CRYPTONOTE_NAME);
 
     /* Where can your users contact you for support? E.g. discord */
-    const std::string contactLink = "spawncoin@protonmail.com";
+    const std::string contactLink = "http://github.com/spawncoin";
 
 
     /* The number of decimals your coin has */
