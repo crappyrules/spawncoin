@@ -26,7 +26,7 @@ namespace WalletConfig
     const std::string daemonName = "Spawnd";
 
     /* The name to call this wallet */
-    const std::string walletName = "zedwallet";
+    const std::string walletName = "spawnwallet";
 
     /* The name of service/walletd, the programmatic rpc interface to a
        wallet */
@@ -76,4 +76,20 @@ namespace WalletConfig
     /* Should we process coinbase transactions? We can skip them to speed up
        syncing, as most people don't have solo mined transactions */
     const bool processCoinbaseTransactions = true;
+
+    /**
+     * Max size of a post body response - 10MB
+     * Will decrease the amount of blocks requested from the daemon if this
+     * is exceeded.
+     * Note - blockStoreMemoryLimit - maxBodyResponseSize should be greater
+     * than zero, or no data will get cached.
+     * Further note: Currently blocks request are not decreased if this is
+     * exceeded. Needs to be implemented in future?
+     */
+    const size_t maxBodyResponseSize = 1024 * 1024 * 10;
+
+    /**
+     * The amount of memory to use storing downloaded blocks - 50MB
+     */
+    const size_t blockStoreMemoryLimit = 1024 * 1024 * 50;
 }
