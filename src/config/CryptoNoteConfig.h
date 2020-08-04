@@ -67,7 +67,7 @@ Spawncoind --print-genesis-tx --genesis-block-reward-address MEpLh1LswBqihtwVB7V
 * You should see your premine appear in the previously generated wallet.
 
 */
-const char     GENESIS_COINBASE_TX_HEX[]                     = "013c01ff00018080a0b197bcc5c605026a1d4df03fcf0a5f1217c1f499bd6331e029881810d2517f311821bd9e9eba602101d484476aa1924d385b29314e78ba06f0f03573d10b90c222884fc05868deef2d";
+const char     GENESIS_COINBASE_TX_HEX[]                     = "011401ff0001ccd4dfc603029b2e4c0281c0b02e7c53291a94d1d0cbff8883f8024f5142ee494ffbbd0880712101232540b1e57c7a8af50ceb3a54cf0d87c2485dbc573a30e0aa8c1db2c032f96f";
 static_assert(sizeof(GENESIS_COINBASE_TX_HEX)/sizeof(*GENESIS_COINBASE_TX_HEX) != 1, "GENESIS_COINBASE_TX_HEX must not be empty.");
 
 /* This is the unix timestamp of the first "mined" block (technically block 2, not the genesis block)
