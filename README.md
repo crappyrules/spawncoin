@@ -2,10 +2,10 @@
 
 ### Specs
 * Algorithm - Cryptonight Turtle (ASIC resistant)
-* Supply - 20,000,000,000
+* Supply - 10,000,000
 * Decimals - 8
 * Blocktime - 120 seconds
-* Premine amount 20%
+
 
 ### Installing
 
