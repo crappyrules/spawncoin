@@ -26,11 +26,11 @@ namespace WalletConfig
     const std::string daemonName = "SpawnEngine";
 
     /* The name to call this wallet */
-    const std::string walletName = "spawnwallet";
+    const std::string walletName = "SpawnWallet";
 
     /* The name of service/walletd, the programmatic rpc interface to a
        wallet */
-    const std::string walletdName = "spawncoin-service";
+    const std::string walletdName = "spawn-service";
 
     /* The full name of your crypto */
     const std::string coinName = std::string(CryptoNote::CRYPTONOTE_NAME);
