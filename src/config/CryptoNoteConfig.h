@@ -265,7 +265,7 @@ const static   boost::uuids::uuid CRYPTONOTE_NETWORK         =
 
 const char* const SEED_NODES[] = {
   "45.77.131.170:11897",  // Tokyo
-  "139.180.222.70:11897", // Singapore
+  "78.141.213.139:11897", // Toronto
   "78.141.219.237:11897", // Amsterdam
   "155.138.154.155:11897" // Toronto
 };
