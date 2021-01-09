@@ -1,5 +1,5 @@
 // Copyright (c) 2018, The TurtleCoin Developers
-// 
+//
 // Please see the included LICENSE file for more information.
 
 ////////////////////////////////////////
@@ -18,102 +18,102 @@ bool handleCommand(const std::string command,
                    CryptoNote::INode &node)
 {
     /* Basic commands */
-    if (command == "advanced")
+    if (command == "高级")
     {
         advanced(walletInfo);
     }
-    else if (command == "address")
+    else if (command == "地址")
     {
         std::cout << SuccessMsg(walletInfo->walletAddress) << std::endl;
     }
-    else if (command == "balance")
+    else if (command == "平衡")
     {
         balance(node, walletInfo->wallet, walletInfo->viewWallet);
     }
-    else if (command == "backup")
+    else if (command == "后备")
     {
         exportKeys(walletInfo);
     }
-    else if (command == "exit")
+    else if (command == "出口")
     {
         return false;
     }
-    else if (command == "help")
+    else if (command == "救命")
     {
         help(walletInfo);
     }
-    else if (command == "transfer")
+    else if (command == "转让")
     {
         transfer(walletInfo, node.getLastKnownBlockHeight(), false,
                  node.feeAddress(), node.feeAmount());
     }
     /* Advanced commands */
-    else if (command == "ab_add")
+    else if (command == "ab_加")
     {
         addToAddressBook();
     }
-    else if (command == "ab_delete")
+    else if (command == "ab_删除")
     {
         deleteFromAddressBook();
     }
-    else if (command == "ab_list")
+    else if (command == "ab_清单")
     {
         listAddressBook();
     }
-    else if (command == "ab_send")
+    else if (command == "ab_发送")
     {
         sendFromAddressBook(walletInfo, node.getLastKnownBlockHeight(),
                             node.feeAddress(), node.feeAmount());
     }
-    else if (command == "change_password")
+    else if (command == "更改密码")
     {
         changePassword(walletInfo);
     }
-    else if (command == "make_integrated_address")
+    else if (command == "填写综合地址")
     {
         createIntegratedAddress();
     }
-    else if (command == "incoming_transfers")
+    else if (command == "传入转账")
     {
         listTransfers(true, false, walletInfo->wallet, node);
     }
-    else if (command == "list_transfers")
+    else if (command == "清单转移")
     {
         listTransfers(true, true, walletInfo->wallet, node);
     }
-    else if (command == "optimize")
+    else if (command == "优化")
     {
         fullOptimize(walletInfo->wallet, node.getLastKnownBlockHeight());
     }
-    else if (command == "outgoing_transfers")
+    else if (command == "外向转账")
     {
         listTransfers(false, true, walletInfo->wallet, node);
     }
-    else if (command == "reset")
+    else if (command == "重启")
     {
         reset(node, walletInfo);
     }
-    else if (command == "save")
+    else if (command == "保存")
     {
         save(walletInfo->wallet);
     }
-    else if (command == "save_csv")
+    else if (command == "保存_csv")
     {
         saveCSV(walletInfo->wallet, node);
     }
-    else if (command == "send_all")
+    else if (command == "全部发送")
     {
         transfer(walletInfo, node.getLastKnownBlockHeight(), true,
                  node.feeAddress(), node.feeAmount());
     }
-    else if (command == "status")
+    else if (command == "状态")
     {
         status(node, walletInfo->wallet);
     }
     /* This should never happen */
     else
     {
-        throw std::runtime_error("Command was defined but not hooked up!");
+        throw std::runtime_error("命令已定义但未连接!");
     }
 
     return true;
@@ -123,29 +123,29 @@ std::shared_ptr<WalletInfo> handleLaunchCommand(CryptoNote::WalletGreen &wallet,
                                                 std::string launchCommand,
                                                 Config &config)
 {
-    if (launchCommand == "create")
+    if (launchCommand == "创造")
     {
         return generateWallet(wallet);
     }
-    else if (launchCommand == "open")
+    else if (launchCommand == "打开")
     {
         return openWallet(wallet, config);
     }
-    else if (launchCommand == "seed_restore")
+    else if (launchCommand == "种子还原")
     {
         return mnemonicImportWallet(wallet);
     }
-    else if (launchCommand == "key_restore")
+    else if (launchCommand == "密钥还原")
     {
         return importWallet(wallet);
     }
-    else if (launchCommand == "view_wallet")
+    else if (launchCommand == "查看钱包")
     {
         return createViewWallet(wallet);
     }
     /* This should never happen */
     else
     {
-        throw std::runtime_error("Command was defined but not hooked up!");
+        throw std::runtime_error("命令已定义但未连接!");
     }
 }

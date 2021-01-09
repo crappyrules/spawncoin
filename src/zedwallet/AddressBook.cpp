@@ -1,5 +1,5 @@
 // Copyright (c) 2018, The TurtleCoin Developers
-// 
+//
 // Please see the included LICENSE file for more information.
 
 //////////////////////////////////
@@ -25,8 +25,8 @@ const std::string getAddressBookName(AddressBook addressBook)
     {
         std::string friendlyName;
 
-        std::cout << InformationMsg("What friendly name do you want to ")
-                  << InformationMsg("give this address book entry?: ");
+        std::cout << InformationMsg("您想要什么友好的名字 ")
+                  << InformationMsg("给这个通讯录条目?: ");
 
         std::getline(std::cin, friendlyName);
         trim(friendlyName);
@@ -36,8 +36,8 @@ const std::string getAddressBookName(AddressBook addressBook)
 
         if (it != addressBook.end())
         {
-            std::cout << WarningMsg("An address book entry with this ")
-                      << WarningMsg("name already exists!")
+            std::cout << WarningMsg("与此相关的通讯录条目 ")
+                      << WarningMsg("名称已经存在!")
                       << std::endl << std::endl;
 
             continue;
@@ -52,7 +52,7 @@ const Maybe<std::string> getAddressBookPaymentID()
     std::stringstream msg;
 
     msg << std::endl
-        << "Does this address book entry have a payment ID associated with it?"
+        << "此通讯录条目是否具有与其关联的付款ID?"
         << std::endl;
 
     return getPaymentID(msg.str());
@@ -60,26 +60,26 @@ const Maybe<std::string> getAddressBookPaymentID()
 
 void addToAddressBook()
 {
-    std::cout << InformationMsg("Note: You can type cancel at any time to "
-                                "cancel adding someone to your address book")
+    std::cout << InformationMsg("注意：您可以随时输入“取消”来 "
+                                "取消将某人添加到您的地址簿")
               << std::endl << std::endl;
 
     auto addressBook = getAddressBook();
 
     const std::string friendlyName = getAddressBookName(addressBook);
 
-    if (friendlyName == "cancel")
+    if (friendlyName == "取消")
     {
-        std::cout << WarningMsg("Cancelling addition to address book.")
+        std::cout << WarningMsg("取消添加到地址簿.")
                   << std::endl;
         return;
     }
 
-    auto maybeAddress = getAddress("\nWhat address does this user have? ");
+    auto maybeAddress = getAddress("\n该用户有什么地址? ");
 
     if (!maybeAddress.isJust)
     {
-        std::cout << WarningMsg("Cancelling addition to address book.")
+        std::cout << WarningMsg("取消添加到地址簿.")
                   << std::endl;
         return;
     }
@@ -95,7 +95,7 @@ void addToAddressBook()
 
         if (!maybePaymentID.isJust)
         {
-            std::cout << WarningMsg("Cancelling addition to address book.")
+            std::cout << WarningMsg("取消添加到地址簿.")
                       << std::endl;
 
             return;
@@ -110,8 +110,8 @@ void addToAddressBook()
     if (saveAddressBook(addressBook))
     {
         std::cout << std::endl
-                  << SuccessMsg("A new entry has been added to your address ")
-                  << SuccessMsg("book!")
+                  << SuccessMsg("新条目已添加到您的地址 ")
+                  << SuccessMsg("书!")
                   << std::endl;
     }
 }
@@ -122,13 +122,13 @@ const Maybe<const AddressBookEntry> getAddressBookEntry(AddressBook addressBook)
     {
         std::string friendlyName;
 
-        std::cout << InformationMsg("Who do you want to send to from your ")
-                  << InformationMsg("address book?: ");
+        std::cout << InformationMsg("您想发送给谁 ")
+                  << InformationMsg("地址簿?: ");
 
         std::getline(std::cin, friendlyName);
         trim(friendlyName);
 
-        if (friendlyName == "cancel")
+        if (friendlyName == "取消")
         {
             return Nothing<const AddressBookEntry>();
         }
@@ -142,13 +142,13 @@ const Maybe<const AddressBookEntry> getAddressBookEntry(AddressBook addressBook)
         }
 
         std::cout << std::endl
-                  << WarningMsg("Could not find a user with the name of ")
+                  << WarningMsg("找不到名称为的用户 ")
                   << InformationMsg(friendlyName)
-                  << WarningMsg(" in your address book!")
+                  << WarningMsg(" 在您的通讯录中!")
                   << std::endl << std::endl;
 
-        const bool list = confirm("Would you like to list everyone in your "
-                                  "address book?");
+        const bool list = confirm("您想列出您的所有人吗 "
+                                  "地址簿?");
 
         std::cout << std::endl;
 
@@ -170,8 +170,8 @@ void sendFromAddressBook(std::shared_ptr<WalletInfo> walletInfo,
         return;
     }
 
-    std::cout << InformationMsg("Note: You can type cancel at any time to ")
-              << InformationMsg("cancel the transaction")
+    std::cout << InformationMsg("注意：您可以随时输入“取消”来 ")
+              << InformationMsg("取消交易")
               << std::endl
               << std::endl;
 
@@ -179,7 +179,7 @@ void sendFromAddressBook(std::shared_ptr<WalletInfo> walletInfo,
 
     if (!maybeAddressBookEntry.isJust)
     {
-        std::cout << WarningMsg("Cancelling transaction.") << std::endl;
+        std::cout << WarningMsg("取消交易.") << std::endl;
         return;
     }
 
@@ -189,7 +189,7 @@ void sendFromAddressBook(std::shared_ptr<WalletInfo> walletInfo,
 
     if (!maybeAmount.isJust)
     {
-        std::cout << WarningMsg("Cancelling transction.") << std::endl;
+        std::cout << WarningMsg("取消交易.") << std::endl;
         return;
     }
 
@@ -218,8 +218,8 @@ bool isAddressBookEmpty(AddressBook addressBook)
 {
     if (addressBook.empty())
     {
-        std::cout << WarningMsg("Your address book is empty! Add some people ")
-                  << WarningMsg("to it first.")
+        std::cout << WarningMsg("您的通讯录是空的！ 加一些人 ")
+                  << WarningMsg("首先.")
                   << std::endl;
 
         return true;
@@ -239,22 +239,22 @@ void deleteFromAddressBook()
 
     while (true)
     {
-        std::cout << InformationMsg("Note: You can type cancel at any time ")
-                  << InformationMsg("to cancel the deletion")
+        std::cout << InformationMsg("注意：您可以随时输入“取消” ")
+                  << InformationMsg("取消删除")
                   << std::endl
                   << std::endl;
 
         std::string friendlyName;
 
-        std::cout << InformationMsg("What address book entry do you want to ")
-                  << InformationMsg("delete?: ");
+        std::cout << InformationMsg("您要输入什么通讯录 ")
+                  << InformationMsg("删除?: ");
 
         std::getline(std::cin, friendlyName);
         trim(friendlyName);
 
-        if (friendlyName == "cancel")
+        if (friendlyName == "取消")
         {
-            std::cout << WarningMsg("Cancelling deletion.") << std::endl;
+            std::cout << WarningMsg("取消删除.") << std::endl;
             return;
         }
 
@@ -268,8 +268,8 @@ void deleteFromAddressBook()
             if (saveAddressBook(addressBook))
             {
                 std::cout << std::endl
-                          << SuccessMsg("This entry has been deleted from ")
-                          << SuccessMsg("your address book!")
+                          << SuccessMsg("此项已从中删除 ")
+                          << SuccessMsg("您的通讯录!")
                           << std::endl;
             }
 
@@ -277,14 +277,14 @@ void deleteFromAddressBook()
         }
 
         std::cout << std::endl
-                  << WarningMsg("Could not find a user with the name of ")
+                  << WarningMsg("找不到名称为的用户 ")
                   << InformationMsg(friendlyName)
-                  << WarningMsg(" in your address book!")
+                  << WarningMsg(" 在您的通讯录中!")
                   << std::endl
                   << std::endl;
 
-        bool list = confirm("Would you like to list everyone in your "
-                            "address book?");
+        bool list = confirm("您想列出您的所有人吗 "
+                            "地址簿?");
 
         std::cout << std::endl;
 
@@ -308,17 +308,17 @@ void listAddressBook()
 
     for (const auto &i : addressBook)
     {
-        std::cout << InformationMsg("Address Book Entry #")
+        std::cout << InformationMsg("通讯录条目 #")
                   << InformationMsg(std::to_string(index))
                   << InformationMsg(":")
                   << std::endl
                   << std::endl
-                  << InformationMsg("Friendly Name: ")
+                  << InformationMsg("友好名称: ")
                   << std::endl
                   << SuccessMsg(i.friendlyName)
                   << std::endl
                   << std::endl
-                  << InformationMsg("Address: ")
+                  << InformationMsg("地址: ")
                   << std::endl
                   << SuccessMsg(i.address)
                   << std::endl
@@ -326,7 +326,7 @@ void listAddressBook()
 
         if (i.paymentID != "")
         {
-            std::cout << InformationMsg("Payment ID: ")
+            std::cout << InformationMsg("付款编号: ")
                       << std::endl
                       << SuccessMsg(i.paymentID)
                       << std::endl
@@ -373,10 +373,10 @@ bool saveAddressBook(AddressBook addressBook)
     }
     else
     {
-        std::cout << WarningMsg("Failed to save address book to disk!")
+        std::cout << WarningMsg("无法将地址簿保存到磁盘!")
                   << std::endl
-                  << WarningMsg("Check you are able to write files to your ")
-                  << WarningMsg("current directory.") << std::endl;
+                  << WarningMsg("检查您是否能够将文件写入到 ")
+                  << WarningMsg("当前目录.") << std::endl;
 
         return false;
     }

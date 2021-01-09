@@ -1,5 +1,5 @@
 // Copyright (c) 2018, The TurtleCoin Developers
-// 
+//
 // Please see the included LICENSE file for more information.
 
 /////////////////////////////////////////////
@@ -37,11 +37,11 @@
 void changePassword(std::shared_ptr<WalletInfo> walletInfo)
 {
     /* Check the user knows the current password */
-    confirmPassword(walletInfo->walletPass, "Confirm your current password: ");
+    confirmPassword(walletInfo->walletPass, "确认您的当前密码: ");
 
     /* Get a new password for the wallet */
     const std::string newPassword
-        = getWalletPassword(true, "Enter your new password: ");
+        = getWalletPassword(true, "输入新密码: ");
 
     /* Change the wallet password */
     walletInfo->wallet.changePassword(walletInfo->walletPass, newPassword);
@@ -52,7 +52,7 @@ void changePassword(std::shared_ptr<WalletInfo> walletInfo)
     /* Make sure we save with the new password */
     walletInfo->wallet.save();
 
-    std::cout << SuccessMsg("Your password has been changed!") << std::endl;
+    std::cout << SuccessMsg("您的密码已被更改!") << std::endl;
 }
 
 void exportKeys(std::shared_ptr<WalletInfo> walletInfo)
@@ -67,7 +67,7 @@ void printPrivateKeys(CryptoNote::WalletGreen &wallet, bool viewWallet)
 
     if (viewWallet)
     {
-        std::cout << SuccessMsg("Private view key:")
+        std::cout << SuccessMsg("私密视图键:")
                   << std::endl
                   << SuccessMsg(Common::podToHex(privateViewKey))
                   << std::endl;
@@ -84,12 +84,12 @@ void printPrivateKeys(CryptoNote::WalletGreen &wallet, bool viewWallet)
     const bool deterministicPrivateKeys
              = derivedPrivateViewKey == privateViewKey;
 
-    std::cout << SuccessMsg("Private spend key:")
+    std::cout << SuccessMsg("私人消费钥匙:")
               << std::endl
               << SuccessMsg(Common::podToHex(privateSpendKey))
               << std::endl
               << std::endl
-              << SuccessMsg("Private view key:")
+              << SuccessMsg("私密视图键:")
               << std::endl
               << SuccessMsg(Common::podToHex(privateViewKey))
               << std::endl;
@@ -97,7 +97,7 @@ void printPrivateKeys(CryptoNote::WalletGreen &wallet, bool viewWallet)
     if (deterministicPrivateKeys)
     {
         std::cout << std::endl
-                  << SuccessMsg("Mnemonic seed:")
+                  << SuccessMsg("助记种子:")
                   << std::endl
                   << SuccessMsg(Mnemonics::PrivateKeyToMnemonic(privateSpendKey))
                   << std::endl;
@@ -125,7 +125,7 @@ void balance(CryptoNote::INode &node, CryptoNote::WalletGreen &wallet,
         confirmedBalance = 0;
 
         size_t numTransactions = wallet.getTransactionCount();
-        
+
         for (size_t i = 0; i < numTransactions; i++)
         {
             const CryptoNote::WalletTransaction t = wallet.getTransaction(i);
@@ -141,28 +141,27 @@ void balance(CryptoNote::INode &node, CryptoNote::WalletGreen &wallet,
 
     const uint64_t totalBalance = unconfirmedBalance + confirmedBalance;
 
-    std::cout << "Available balance: "
+    std::cout << "可用余额: "
               << SuccessMsg(formatAmount(confirmedBalance)) << std::endl
-              << "Locked (unconfirmed) balance: "
+              << "锁定（未确认）余额: "
               << WarningMsg(formatAmount(unconfirmedBalance))
-              << std::endl << "Total balance: "
+              << std::endl << "总余额: "
               << InformationMsg(formatAmount(totalBalance)) << std::endl;
 
     if (viewWallet)
     {
-        std::cout << std::endl 
-                  << InformationMsg("Please note that view only wallets "
-                                    "can only track incoming transactions,")
+        std::cout << std::endl
+                  << InformationMsg("请注意，仅查看钱包 "
+                                    "只能跟踪传入的交易,")
                   << std::endl
-                  << InformationMsg("and so your wallet balance may appear "
-                                    "inflated.") << std::endl;
+                  << InformationMsg("因此您的钱包余额可能会出现 "
+                                    "膨胀的.") << std::endl;
     }
 
     if (localHeight < remoteHeight)
     {
         std::cout << std::endl
-                  << InformationMsg("Your daemon is not fully synced with "
-                                    "the network!")
+                  << InformationMsg("您的守护程序未与网络完全同步!")
                   << std::endl
                   << "Your balance may be incorrect until you are fully "
                   << "synced!" << std::endl;
@@ -172,10 +171,9 @@ void balance(CryptoNote::INode &node, CryptoNote::WalletGreen &wallet,
     else if (walletHeight + 1000 < remoteHeight)
     {
         std::cout << std::endl
-                  << InformationMsg("The blockchain is still being scanned for "
-                                    "your transactions.")
+                  << InformationMsg("区块链仍在进行交易扫描.")
                   << std::endl
-                  << "Balances might be incorrect whilst this is ongoing."
+                  << "进行中时余额可能不正确."
                   << std::endl;
     }
 }
@@ -186,7 +184,7 @@ void printHeights(uint32_t localHeight, uint32_t remoteHeight,
     /* This is the height that the wallet has been scanned to. The blockchain
        can be fully updated, but we have to walk the chain to find our
        transactions, and this number indicates that progress. */
-    std::cout << "Wallet blockchain height: ";
+    std::cout << "钱包区块链高度: ";
 
     /* Small buffer because wallet height doesn't update instantly like node
        height does */
@@ -199,7 +197,7 @@ void printHeights(uint32_t localHeight, uint32_t remoteHeight,
         std::cout << WarningMsg(std::to_string(walletHeight));
     }
 
-    std::cout << std::endl << "Local blockchain height: ";
+    std::cout << std::endl << "本地区块链高度: ";
 
     if (localHeight == remoteHeight)
     {
@@ -210,7 +208,7 @@ void printHeights(uint32_t localHeight, uint32_t remoteHeight,
         std::cout << WarningMsg(std::to_string(localHeight));
     }
 
-    std::cout << std::endl << "Network blockchain height: "
+    std::cout << std::endl << "网络区块链高度: "
               << SuccessMsg(std::to_string(remoteHeight)) << std::endl;
 }
 
@@ -223,7 +221,7 @@ void printSyncStatus(uint32_t localHeight, uint32_t remoteHeight,
     std::string walletSyncPercentage
         = Utilities::get_sync_percentage(walletHeight, remoteHeight) + "%";
 
-    std::cout << "Network sync status: ";
+    std::cout << "网络同步状态: ";
 
     if (localHeight == remoteHeight)
     {
@@ -234,8 +232,8 @@ void printSyncStatus(uint32_t localHeight, uint32_t remoteHeight,
         std::cout << WarningMsg(networkSyncPercentage) << std::endl;
     }
 
-    std::cout << "Wallet sync status: ";
-    
+    std::cout << "钱包同步状态: ";
+
     /* Small buffer because wallet height is not always completely accurate */
     if (walletHeight + 1000 > remoteHeight)
     {
@@ -252,34 +250,31 @@ void printSyncSummary(uint32_t localHeight, uint32_t remoteHeight,
 {
     if (localHeight == 0 && remoteHeight == 0)
     {
-        std::cout << WarningMsg("Uh oh, it looks like you don't have ")
+        std::cout << WarningMsg("嗯，看来你没有 ")
                   << WarningMsg(WalletConfig::daemonName)
-                  << WarningMsg(" open!")
+                  << WarningMsg(" 打开!")
                   << std::endl;
     }
     else if (walletHeight + 1000 < remoteHeight && localHeight == remoteHeight)
     {
-        std::cout << InformationMsg("You are synced with the network, but the "
-                                    "blockchain is still being scanned for "
-                                    "your transactions.")
+        std::cout << InformationMsg("您已与网络同步，但仍在扫描区块链中的交易.")
                   << std::endl
-                  << "Balances might be incorrect whilst this is ongoing."
+                  << "进行中时余额可能不正确."
                   << std::endl;
     }
     else if (localHeight == remoteHeight)
     {
-        std::cout << SuccessMsg("Yay! You are synced!") << std::endl;
+        std::cout << SuccessMsg("好极了! 您已同步!") << std::endl;
     }
     else
     {
-        std::cout << WarningMsg("Be patient, you are still syncing with the "
-                                "network!") << std::endl;
+        std::cout << WarningMsg("请耐心等待，您仍在与网络同步!") << std::endl;
     }
 }
 
 void printPeerCount(size_t peerCount)
 {
-    std::cout << "Peers: " << SuccessMsg(std::to_string(peerCount))
+    std::cout << "同行: " << SuccessMsg(std::to_string(peerCount))
               << std::endl;
 }
 
@@ -296,9 +291,9 @@ void printHashrate(uint64_t difficulty)
         round(difficulty / CryptoNote::parameters::DIFFICULTY_TARGET)
     );
 
-    std::cout << "Network hashrate: "
+    std::cout << "网络哈希率: "
               << SuccessMsg(Utilities::get_mining_speed(hashrate))
-              << " (Based on the last local block)" << std::endl;
+              << " (基于最后一个本地块)" << std::endl;
 }
 
 /* This makes sure to call functions on the node which only return cached
@@ -337,18 +332,18 @@ void reset(CryptoNote::INode &node, std::shared_ptr<WalletInfo> walletInfo)
     uint64_t scanHeight = getScanHeight();
 
     std::cout << std::endl
-              << InformationMsg("This process may take some time to complete.")
+              << InformationMsg("此过程可能需要一些时间才能完成.")
               << std::endl
-              << InformationMsg("You can't make any transactions during the ")
-              << InformationMsg("process.")
+              << InformationMsg("您在交易期间无法进行任何交易 ")
+              << InformationMsg("处理.")
               << std::endl << std::endl;
-    
-    if (!confirm("Are you sure?"))
+
+    if (!confirm("你确定吗?"))
     {
         return;
     }
-    
-    std::cout << InformationMsg("Resetting wallet...") << std::endl;
+
+    std::cout << InformationMsg("重置钱包...") << std::endl;
 
     walletInfo->wallet.reset(scanHeight);
 
@@ -364,19 +359,17 @@ void saveCSV(CryptoNote::WalletGreen &wallet, CryptoNote::INode &node)
 
     if (!csv)
     {
-        std::cout << WarningMsg("Couldn't open transactions.csv file for "
-                                "saving!")
+        std::cout << WarningMsg("无法打开transactions.csv文件进行保存!")
                   << std::endl
-                  << WarningMsg("Ensure it is not open in any other "
-                                "application.")
+                  << WarningMsg("确保它没有在任何其他应用程序中打开.")
                   << std::endl;
         return;
     }
 
-    std::cout << InformationMsg("Saving CSV file...") << std::endl;
+    std::cout << InformationMsg("保存CSV文件...") << std::endl;
 
     /* Create CSV header */
-    csv << "Timestamp,Block Height,Hash,Amount,In/Out"
+    csv << "时间戳,块高,哈希,金额,输入/输出"
         << std::endl;
 
     /* Loop through transactions */
@@ -404,7 +397,7 @@ void saveCSV(CryptoNote::WalletGreen &wallet, CryptoNote::INode &node)
 
     csv.close();
 
-    std::cout << SuccessMsg("CSV successfully written to ")
+    std::cout << SuccessMsg("CSV已成功写入 ")
               << SuccessMsg(WalletConfig::csvFilename)
               << SuccessMsg("!")
               << std::endl;
@@ -413,33 +406,33 @@ void saveCSV(CryptoNote::WalletGreen &wallet, CryptoNote::INode &node)
 void printOutgoingTransfer(CryptoNote::WalletTransaction t,
                            CryptoNote::INode &node)
 {
-    std::cout << WarningMsg("Outgoing transfer:")
+    std::cout << WarningMsg("外向转移:")
               << std::endl
-              << WarningMsg("Hash: " + Common::podToHex(t.hash))
+              << WarningMsg("杂凑: " + Common::podToHex(t.hash))
               << std::endl;
 
     if (t.timestamp != 0)
     {
-        std::cout << WarningMsg("Block height: ")
+        std::cout << WarningMsg("块高: ")
                   << WarningMsg(std::to_string(t.blockHeight))
                   << std::endl
-                  << WarningMsg("Timestamp: ")
+                  << WarningMsg("时间戳记: ")
                   << WarningMsg(unixTimeToDate(t.timestamp))
                   << std::endl;
     }
 
-    std::cout << WarningMsg("Spent: " + formatAmount(-t.totalAmount - t.fee))
+    std::cout << WarningMsg("花费: " + formatAmount(-t.totalAmount - t.fee))
               << std::endl
-              << WarningMsg("Fee: " + formatAmount(t.fee))
+              << WarningMsg("费用: " + formatAmount(t.fee))
               << std::endl
-              << WarningMsg("Total Spent: " + formatAmount(-t.totalAmount))
+              << WarningMsg("总花费: " + formatAmount(-t.totalAmount))
               << std::endl;
 
     const std::string paymentID = getPaymentIDFromExtra(t.extra);
 
     if (paymentID != "")
     {
-        std::cout << WarningMsg("Payment ID: " + paymentID) << std::endl;
+        std::cout << WarningMsg("付款编号: " + paymentID) << std::endl;
     }
 
     std::cout << std::endl;
@@ -448,36 +441,36 @@ void printOutgoingTransfer(CryptoNote::WalletTransaction t,
 void printIncomingTransfer(CryptoNote::WalletTransaction t,
                            CryptoNote::INode &node)
 {
-    std::cout << SuccessMsg("Incoming transfer:")
+    std::cout << SuccessMsg("传入转帐:")
               << std::endl
-              << SuccessMsg("Hash: " + Common::podToHex(t.hash))
+              << SuccessMsg("杂凑: " + Common::podToHex(t.hash))
               << std::endl;
 
     if (t.timestamp != 0)
     {
-        std::cout << SuccessMsg("Block height: ")
+        std::cout << SuccessMsg("块高: ")
                   << SuccessMsg(std::to_string(t.blockHeight))
                   << std::endl
-                  << SuccessMsg("Timestamp: ")
+                  << SuccessMsg("时间戳记: ")
                   << SuccessMsg(unixTimeToDate(t.timestamp))
                   << std::endl;
     }
 
 
-    std::cout << SuccessMsg("Amount: " + formatAmount(t.totalAmount))
+    std::cout << SuccessMsg("量: " + formatAmount(t.totalAmount))
               << std::endl;
 
     const std::string paymentID = getPaymentIDFromExtra(t.extra);
 
     if (paymentID != "")
     {
-        std::cout << SuccessMsg("Payment ID: " + paymentID) << std::endl;
+        std::cout << SuccessMsg("付款编号: " + paymentID) << std::endl;
     }
 
     std::cout << std::endl;
 }
 
-void listTransfers(bool incoming, bool outgoing, 
+void listTransfers(bool incoming, bool outgoing,
                    CryptoNote::WalletGreen &wallet, CryptoNote::INode &node)
 {
     const size_t numTransactions = wallet.getTransactionCount();
@@ -511,29 +504,28 @@ void listTransfers(bool incoming, bool outgoing,
 
     if (incoming)
     {
-        std::cout << SuccessMsg("Total received: " 
+        std::cout << SuccessMsg("收到的总数: "
                               + formatAmount(totalReceived))
                   << std::endl;
     }
 
     if (outgoing)
     {
-        std::cout << WarningMsg("Total spent: " + formatAmount(totalSpent))
+        std::cout << WarningMsg("总支出: " + formatAmount(totalSpent))
                   << std::endl;
     }
 }
 
 void save(CryptoNote::WalletGreen &wallet)
 {
-    std::cout << InformationMsg("Saving.") << std::endl;
+    std::cout << InformationMsg("保存.") << std::endl;
     wallet.save();
-    std::cout << InformationMsg("Saved.") << std::endl;
+    std::cout << InformationMsg("已保存.") << std::endl;
 }
 
 void createIntegratedAddress()
 {
-    std::cout << InformationMsg("Creating an integrated address from an ")
-              << InformationMsg("address and payment ID pair...")
+    std::cout << InformationMsg("根据地址和付款ID对创建集成地址...")
               << std::endl << std::endl;
 
     std::string address;
@@ -541,7 +533,7 @@ void createIntegratedAddress()
 
     while (true)
     {
-        std::cout << InformationMsg("Address: ");
+        std::cout << InformationMsg("地址: ");
 
         std::getline(std::cin, address);
         trim(address);
@@ -556,7 +548,7 @@ void createIntegratedAddress()
 
     while (true)
     {
-        std::cout << InformationMsg("Payment ID: ");
+        std::cout << InformationMsg("付款编号: ");
 
         std::getline(std::cin, paymentID);
         trim(paymentID);
@@ -567,8 +559,7 @@ void createIntegratedAddress()
 
         if (!CryptoNote::createTxExtraWithPaymentId(paymentID, extra))
         {
-            std::cout << WarningMsg("Failed to parse! Payment ID's are 64 "
-                                    "character hexadecimal strings.")
+            std::cout << WarningMsg("无法解析! 付款ID为64个字符的十六进制字符串.")
                       << std::endl << std::endl;
 
             continue;
