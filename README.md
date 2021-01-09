@@ -1,4 +1,4 @@
-# Spawncoin (SPWN)
+# Spawncoin (SPWN) - Mandarin Branch
 
 ### Specs
 * Algorithm - Cryptonight Turtle (ASIC resistant)
